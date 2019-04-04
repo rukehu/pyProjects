@@ -62,7 +62,6 @@ class ExcelHeadl(object):
             return
 
         for row in sheet.rows:
-
             # row = 0,1 获取寄存器表头总体信息, row = 2 获取寄存器表头信息
             if row_idx == 0 or row_idx == 2:
                 tab_list = []
@@ -99,11 +98,15 @@ class ExcelHeadl(object):
         print(reg_info)
         return reg_info
 
+    def read_excel_end(self):
+        self._excel_wb.close()
+
+
 if __name__ == '__main__':
     sheets = list()
     excel_headl = ExcelHeadl()
     excel_headl.open_excel('../L3.xlsx')
     sheets = excel_headl.get_excel_sheets()
     print(sheets)
-    excel_headl.get_registers_info(sheets[1])
-
+    excel_headl.get_registers_info(sheets[6])
+    excel_headl.read_excel_end()
