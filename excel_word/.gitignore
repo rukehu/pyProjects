@@ -1,0 +1,8 @@
+.idea/
+venv/
+__pycache__/
+*.autosave
+build/
+*.spec
+~$*
+demo.docx
