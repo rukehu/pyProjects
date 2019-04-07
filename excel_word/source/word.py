@@ -12,7 +12,6 @@ logger = logging.getLogger('WordHandl')
 class WrodHandl(object):
     def __init__(self):
         self._word_doc = None
-        pass
 
     def __writ_hand_info(self, hand_info):
         """
@@ -22,11 +21,17 @@ class WrodHandl(object):
         """
         tab_cnt = 'Table Count:' + hand_info['tab_cnt']
         tab_bitwidth = 'Table Bit Width:' + hand_info['tab_bit_width']
+        tab_share = 'Table Sheare:' + hand_info['tab_share']
         tab_type = 'Table Type:' + hand_info['tab_type']
         tab_disc = 'Table Discription:'
         self._word_doc.add_heading(hand_info['key_type'], level=1)    # 写入寄存器表名
 
     def open_word(self, word_path):
+        """
+        打开一个word文档，不存在则创建
+        :param word_path:
+        :return:
+        """
         try:
             self._word_doc = Document(word_path)
         except:
@@ -40,8 +45,6 @@ class WrodHandl(object):
             return
 
         head_info = reg_info['head_info']
-
-
 
 
 

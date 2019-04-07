@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import sys, os
 import openpyxl
 import logging
+import config
 
 logger = logging.getLogger('ExcelHeadl')
 
@@ -13,11 +13,13 @@ class ExcelHeadl(object):
 
     def open_excel(self, excel_path):
         state = False
+        logger.info(excel_path)
         if '.xlsx' in excel_path:
             try:
                 self._excel_wb = openpyxl.load_workbook(excel_path)
             except:
                 logger.info('Can not open this file:', excel_path)
+                print('open error')
                 self._excel_wb = None
             else:
                 state = True
@@ -58,7 +60,7 @@ class ExcelHeadl(object):
         try:
             sheet = self._excel_wb[sheet_name]
         except:
-            logger.info('the sheet not exist :', sheet_name)
+            logger.info('the sheet not exist :')
             return
 
         for row in sheet.rows:
@@ -103,10 +105,10 @@ class ExcelHeadl(object):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.NOTSET)
     sheets = list()
     excel_headl = ExcelHeadl()
-    excel_headl.open_excel('../L3.xlsx')
+    excel_headl.open_excel(config.EXCEL_URL)
     sheets = excel_headl.get_excel_sheets()
-    print(sheets)
-    excel_headl.get_registers_info(sheets[6])
+    excel_headl.get_registers_info(sheets[1])
     excel_headl.read_excel_end()
