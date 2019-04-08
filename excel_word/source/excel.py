@@ -13,13 +13,12 @@ class ExcelHeadl(object):
 
     def open_excel(self, excel_path):
         state = False
-        logger.info(excel_path)
+        logger.debug(excel_path)
         if '.xlsx' in excel_path:
             try:
                 self._excel_wb = openpyxl.load_workbook(excel_path)
             except:
                 logger.info('Can not open this file:', excel_path)
-                print('open error')
                 self._excel_wb = None
             else:
                 state = True
@@ -44,7 +43,7 @@ class ExcelHeadl(object):
         :return:寄存器信息dict :{'head_info', 'key_list'};
                  head_info:{'tab_cnt', 'tab_bit_width', 'tab_type', 'hash_algorithm',
                             'csr_mod', 'csr_addr', 'tab_share', 'tab_description'}
-                 key_list:[{'key_type', 'bit_list'}, {'key_type', 'bit_list'}...]   # 寄存器信息描述list
+                 reg_list:[{'key_type', 'bit_list'}, {'key_type', 'bit_list'}...]   # 寄存器信息描述list
                         bit_list:[{'filed_name', 'filed_bits', 'sub_filed_name', 'sub_filed_bits',
                             'description', 'default_val', 'notes'}, ...]
         """
@@ -54,7 +53,7 @@ class ExcelHeadl(object):
         tab_list = list()
         tab_len = 0
         row_idx = 0
-        key_list = list()
+        reg_list = list()
         bit_list = list()
 
         try:
@@ -71,13 +70,13 @@ class ExcelHeadl(object):
                     if tup.value != None:
                         tab_list.append(tup.value)
                 tab_len = len(tab_list)
-                print(tab_list)
+                logger.debug(tab_list)
 
             elif row_idx == 1:
                 for cloumn_idx in range(tab_len):
                     head_info[tab_list[cloumn_idx]] = row[cloumn_idx].value
                 reg_info['head_info'] = head_info
-                print(head_info)
+                logger.debug(head_info)
 
             else:
                 # 获取寄存器信息
@@ -86,8 +85,8 @@ class ExcelHeadl(object):
                     key_dct[tab_list[0]] = row[0].value    # key_type寄存器名
                     bit_list = list()
                     key_dct['bit_list'] = bit_list
-                    key_list.append(key_dct)
-                    reg_info['key_list'] = key_list
+                    reg_list.append(key_dct)
+                    reg_info['reg_list'] = reg_list
 
                 bit_dct = dict()
                 for cloumn_idx in range(tab_len):
@@ -97,7 +96,6 @@ class ExcelHeadl(object):
                     bit_list.append(bit_dct)
             row_idx += 1
 
-        print(reg_info)
         return reg_info
 
     def read_excel_end(self):
@@ -106,9 +104,10 @@ class ExcelHeadl(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.NOTSET)
-    sheets = list()
     excel_headl = ExcelHeadl()
     excel_headl.open_excel(config.EXCEL_URL)
     sheets = excel_headl.get_excel_sheets()
-    excel_headl.get_registers_info(sheets[1])
+    logger.debug(sheets)
+    reg_info = excel_headl.get_registers_info(sheets[7])
+    logger.debug(reg_info)
     excel_headl.read_excel_end()
