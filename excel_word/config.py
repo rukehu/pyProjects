@@ -2,4 +2,4 @@
 # -*- coding: UTF-8 -*-
 
 # 导入excel表格路径
-EXCEL_URL = 'D:\PyProject\excel_word\L3.xlsx'
+EXCEL_URL = 'D:\PyProjects\excel_word\L3.xlsx'
