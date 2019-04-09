@@ -22,12 +22,13 @@ if __name__ == '__main__':
     if len(sheets) > 0:
         sheet = sheets.pop(0)
 
-    reg_info = excel_headl.get_registers_info(sheets[0])
+    reg_info = excel_headl.get_registers_info(sheets[6])
     logger.debug(reg_info)
     word_headl.write_register_toword(reg_info)
 
     # for sheet in sheets:
-    #     excel_headl.get_registers_info(sheets[1])
+    #     reg_info = excel_headl.get_registers_info(sheet)
+    #     word_headl.write_register_toword(reg_info)
 
     excel_headl.read_excel_end()
     word_headl.write_word_end()
