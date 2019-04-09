@@ -97,21 +97,14 @@ class WrodHandl(object):
         tab_row = len(bit_list) + 1         # 需添加表头
         tab_cloumn = REG_TAB_CLOUMN
         reg_tab = self._word_doc.add_table(tab_row, tab_cloumn, 'Table Grid')
-        table.autofit = False                # 自动填充表格宽度
 
-        col = reg_tab.columns[0]
-        col.width = Inches(1)
-        col = reg_tab.columns[1]
-        col.width = Inches(2)
-        col = reg_tab.columns[2]
-        col.width = Inches(3)
-        col = reg_tab.columns[3]
-        col.width = Inches(4)
-        for i in range(len(reg_tab.columns)):
-            col = reg_tab.columns[i]
-            print(col.width)
-        print('---------------------')
-
+        # 设置表格宽度
+        reg_tab.autofit = False
+        for idx in range(tab_row):
+            reg_tab.cell(idx, 0).width = Inches(0.8)
+            reg_tab.cell(idx, 1).width = Inches(1.8)
+            reg_tab.cell(idx, 2).width = Inches(2.2)
+            reg_tab.cell(idx, 3).width = Inches(0.8)
 
         # 写入表头信息
         head_arr = ['Bits', 'Name', 'Description', 'Default']
