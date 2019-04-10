@@ -40,13 +40,14 @@ class ExcelHeadl(object):
         """
         获取sheet中的一个寄存器信息
         :param sheet_name:
-        :return:寄存器信息dict :{'head_info', 'key_list'};
+        :return:寄存器信息dict :{'head_info', 'reg_list'};
                  head_info:{'tab_cnt', 'tab_bit_width', 'tab_type', 'hash_algorithm',
                             'csr_mod', 'csr_addr', 'tab_share', 'tab_description'}
                  reg_list:[{'key_type', 'bit_list'}, {'key_type', 'bit_list'}...]   # 寄存器信息描述list
                         bit_list:[{'filed_name', 'filed_bits', 'sub_filed_name', 'sub_filed_bits',
                             'description', 'default_val', 'notes'}, ...]
         """
+        key_idx = None
         sheet = None
         reg_info = dict()
         head_info = dict()
@@ -65,24 +66,35 @@ class ExcelHeadl(object):
         for row in sheet.rows:
             # row = 0,1 获取寄存器表头总体信息, row = 2 获取寄存器表头信息
             if row_idx == 0 or row_idx == 2:
+                key_idx = {}
                 tab_list = []
+                idx = 0
+
                 for tup in row:
-                    if tup.value != None:
-                        tab_list.append(tup.value)
+                    val = tup.value
+                    if val != None:
+                        tab_list.append(val)
+                        key_idx[val] = idx
+                    idx += 1
+
                 tab_len = len(tab_list)
                 logger.debug(tab_list)
 
             elif row_idx == 1:
-                for cloumn_idx in range(tab_len):
-                    head_info[tab_list[cloumn_idx]] = row[cloumn_idx].value
+                for _key in tab_list:
+                    head_info[_key] = row[key_idx[_key]].value
                 reg_info['head_info'] = head_info
                 logger.debug(head_info)
 
             else:
                 # 获取寄存器信息
-                if row[0].value != None:
+                tab_name = row[0].value
+                if tab_name != None or row_idx == 3:
                     key_dct = dict()
-                    key_dct[tab_list[0]] = row[0].value    # key_type寄存器名
+                    if tab_name == None:
+                        tab_name = sheet_name
+
+                    key_dct[tab_list[0]] =tab_name
                     bit_list = list()
                     key_dct['bit_list'] = bit_list
                     reg_list.append(key_dct)

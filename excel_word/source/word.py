@@ -17,40 +17,84 @@ class WrodHandl(object):
         self._word_doc = None
         self._tab_cnt = TAB_CNT_BASE
 
-    def __key_type_heading(self, key_list):
+    def __get_tabshare_list(self, tab_shares):
         """
-        根据多个寄存器KEY_TYPE复用,生成Heading标题
-        :param key_list:
-        :return:寄存器标题str
+        获取table share reg list
+        :param tab_shares:
+        :return: list()
         """
-        min_len = len(key_list[0])
-        cnt = len(key_list)
-        ch_eq = False        # 标识含有不相等的字符
+        if len(tab_shares) > 0:
+            return tab_shares.split()    # 以空字符为分割符
 
-        if cnt == 1:
-            return key_list[0]
+        return tab_shares
 
-        for key in key_list:
-            key_len = len(key)
-            if min_len > key_len:
-                min_len = key_len
+    def __get_tabhash_list(self, tab_hashs):
+        if len(tab_hashs) > 0:
+            return tab_hashs.splitlines()
 
-        for idx in range(min_len):
-            ch = key_list[0][idx]
-            for i in range(cnt):
-                if key_list[i][idx] != ch:
-                    ch_eq = True
-                    break
-            if ch_eq:
-                break
+        return tab_hashs
 
-        if ch_eq:
-            heading = key_list[0][0:idx]
-            heading += '_t'
-        else:
-            heading = key_list[0]
 
-        return heading
+    def __get_tab_discriptions(self, disc):
+        """
+        获取寄存器描述信息列表
+        :param disc:
+        :return:list()
+        """
+        disc_list = list()
+        str1 = 'Index Description'
+        str2 = 'Memory Table Description'
+        str3 = 'Description'
+        lookup = False
+
+        disc1 = None
+        disc2 = None
+        disc3 = None
+
+        # 去掉多余的换行符
+        swp_str = disc.splitlines()
+        disc = str()
+        for add_str in swp_str:
+            _str = add_str.rstrip()
+            disc += _str + ' '
+
+        str_len = len(disc)
+        idx = disc.find(str1)
+        if idx >= 0:
+            disc3 = disc[idx:str_len]
+            str_len -= len(disc3)
+            lookup = True
+
+        if str_len > 0:
+            swp_str = disc[0:str_len]
+            idx = swp_str.find(str2)
+            if idx >= 0:
+                disc2 = swp_str[idx:str_len]
+                str_len -= len(disc2)
+                lookup = True
+
+        if str_len > 0 or not lookup:
+            swp_str = disc[0:str_len]
+            idx = swp_str.find(str3)
+            if idx >= 0:
+                disc1 = swp_str[idx:str_len]
+            else:
+                disc1 = str3 + ': ' +swp_str
+
+        if disc1 != None:
+            disc_list.append(disc1)
+
+        if disc2 != None:
+            lower_str = str2
+            rep = disc2.replace(str2, lower_str.lower().capitalize())
+            disc_list.append(rep)
+
+        if disc3 != None:
+            lower_str = str1
+            rep = disc3.replace(str1, lower_str.lower().capitalize())
+            disc_list.append(rep)
+
+        return disc_list
 
     def __write_hand_info(self, hand_info):
         """
@@ -58,24 +102,41 @@ class WrodHandl(object):
         :param hand_info:
         :return:
         """
+        have_key = False
         self._word_doc.add_heading(hand_info['KEY_TYPE'], level=1)  # 写入寄存器表名
 
-        tab_cnt = 'Table Count:' + str(hand_info['TABLE_COUNT'])
+        tab_cnt = 'Table count: ' + str(hand_info['TABLE_COUNT'])
         self._word_doc.add_paragraph(tab_cnt)
 
-        tab_bitwidth = 'Table Bit Width:' + str(hand_info['TABLE_BITS_WIDTH'])
-        self._word_doc.add_paragraph(tab_bitwidth)
+        tab_bitwidth = 'Table bit width: '
+        if 'TABLE_BITS_WIDTH' in hand_info.keys():
+            have_key = True
+            tab_bitwidth += str(hand_info['TABLE_BITS_WIDTH'])
+        elif 'TABLE_WIDTH' in hand_info.keys():
+            tab_bitwidth += str(hand_info['TABLE_WIDTH'])
+        if have_key:
+            self._word_doc.add_paragraph(tab_bitwidth)
 
-        tab_type = 'Table Type:' + hand_info['TABLE_TYPE']
+        tab_type = 'Table type: ' + hand_info['TABLE_TYPE'].lower().capitalize()
         self._word_doc.add_paragraph(tab_type)
 
+        if hand_info['HASH_ALGORITHM']:
+            hash_list = self.__get_tabhash_list(hand_info['HASH_ALGORITHM'])
+            self._word_doc.add_paragraph('Hash algorithm:')
+            for hs in hash_list:
+                self._word_doc.add_paragraph('.' + hs, style='List 2')
+
         if hand_info['TABLE_SHARE']:
-            tab_share = 'Table Share:' + hand_info['TABLE_SHARE']
-            self._word_doc.add_paragraph(tab_share)
+            share_list = self.__get_tabshare_list(hand_info['TABLE_SHARE'])
+            self._word_doc.add_paragraph('Table share:')
+            for share in share_list:
+                self._word_doc.add_paragraph('.' + share, style='List 2')
 
         if hand_info['TABLE_DESCRIPTION']:
-            tab_disc = 'Table Discription:' + hand_info['TABLE_DESCRIPTION']
-            self._word_doc.add_paragraph(tab_disc)
+            desc_list = self.__get_tab_discriptions(hand_info['TABLE_DESCRIPTION'])
+
+            for desc in desc_list:
+                self._word_doc.add_paragraph(desc)
 
     def __write_table_reginfo(self, reg_info):
         """
@@ -102,7 +163,7 @@ class WrodHandl(object):
         reg_tab.autofit = False
         for idx in range(tab_row):
             reg_tab.cell(idx, 0).width = Inches(0.8)
-            reg_tab.cell(idx, 1).width = Inches(1.8)
+            reg_tab.cell(idx, 1).width = Inches(2.0)
             reg_tab.cell(idx, 2).width = Inches(2.2)
             reg_tab.cell(idx, 3).width = Inches(0.8)
 
@@ -154,29 +215,26 @@ class WrodHandl(object):
 
         self._word_doc.styles['Normal'].font.name = FONT_NAME
 
-    def write_register_toword(self, reg_info):
+    def write_register_toword(self, reg_name, reg_info):
         """
         将给与寄存器信息写入word文档
         :param reg_info:
         :return:
         """
-        key_list = list()
-        index = 0
-
         if self._word_doc == None:
             logger.info('The document is not open.')
             return
 
         reg_head = reg_info['head_info']
         reg_list = reg_info['reg_list']
-        for reg in reg_list:
-            key_list.append(reg['KEY_TYPE'])
 
         # 根据多个key type 获取寄存器标题
-        reg_head['KEY_TYPE'] = self.__key_type_heading(key_list)
+        reg_head['KEY_TYPE'] = reg_name
+        print(reg_head)
         self.__write_hand_info(reg_head)
 
         # 将寄存器信息写入word表格
+        index = 0
         for reg_tab in reg_list:
             self.__write_table_reginfo(reg_tab)
 
@@ -184,6 +242,6 @@ class WrodHandl(object):
             if index < len(reg_list):
                 self._word_doc.add_paragraph()
 
-    def write_word_end(self):
+    def write_word_end(self, word_url):
         self._word_doc.add_page_break()
-        self._word_doc.save('L3.docx')
+        self._word_doc.save(word_url)
