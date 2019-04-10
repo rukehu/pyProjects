@@ -13,7 +13,6 @@ class ExcelHeadl(object):
 
     def open_excel(self, excel_path):
         state = False
-        logger.debug(excel_path)
         if '.xlsx' in excel_path:
             try:
                 self._excel_wb = openpyxl.load_workbook(excel_path)
@@ -78,13 +77,11 @@ class ExcelHeadl(object):
                     idx += 1
 
                 tab_len = len(tab_list)
-                logger.debug(tab_list)
 
             elif row_idx == 1:
                 for _key in tab_list:
                     head_info[_key] = row[key_idx[_key]].value
                 reg_info['head_info'] = head_info
-                logger.debug(head_info)
 
             else:
                 # 获取寄存器信息

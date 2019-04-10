@@ -8,7 +8,7 @@ import logging
 import config
 
 logger = logging.getLogger('main')
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format='%(name)s [line:%(lineno)d] %(message)s')
 
 filter=['.xlsx']        # 过滤文件
 
@@ -29,8 +29,8 @@ class SwitchControl(object):
         """
         excel_files = list()  # 所有的文件
 
-        if not os.path.isdir(config.WORD_DIR):
-            logger.info('dir non-exist:', config.WORD_DIR)
+        if not os.path.isdir(config.EXCEL_DIR):
+            logger.info('dir non-exist:', config.EXCEL_DIR)
             return excel_files
 
         for maindir, subdir, files in os.walk(excel_dir):
@@ -66,7 +66,9 @@ class SwitchControl(object):
             sheets.pop(0)
 
         for sheet in sheets:
+            logger.debug(sheet)
             reg_info = self._excel_headl.get_registers_info(sheet)
+            logger.debug(reg_info)
             self._word_headl.write_register_toword(sheet, reg_info)
 
         self._excel_headl.read_excel_end()
@@ -84,8 +86,10 @@ if __name__ == '__main__':
     excels_url = sw_control.get_excels_url(config.EXCEL_DIR)
     sw_control.make_word_dir()            # 检查word文档生成目录是否存在
 
-    e_url = 'D:\PyProjects\excel_word\ExcelTables\hash_table.xlsx'
-    sw_control.excel_to_word(e_url, config.WORD_DIR)
+    # e_url = 'D:\PyProjects\excel_word\ExcelTables\HIRAR.xlsx'
+    # sw_control.excel_to_word(e_url, config.WORD_DIR)
 
-    # for e_url in excels_url:
-    #     sw_control.excel_to_word(e_url, config.WORD_DIR)
+    for e_url in excels_url:
+        logger.debug(e_url)
+        sw_control.excel_to_word(e_url, config.WORD_DIR)
+        logger.debug('----------------------------------\r\n')

@@ -102,6 +102,7 @@ class WrodHandl(object):
         :param hand_info:
         :return:
         """
+        logger.debug(hand_info)
         have_key = False
         self._word_doc.add_heading(hand_info['KEY_TYPE'], level=1)  # 写入寄存器表名
 
@@ -120,23 +121,27 @@ class WrodHandl(object):
         tab_type = 'Table type: ' + hand_info['TABLE_TYPE'].lower().capitalize()
         self._word_doc.add_paragraph(tab_type)
 
-        if hand_info['HASH_ALGORITHM']:
+        if 'HASH_ALGORITHM' in hand_info.keys():
             hash_list = self.__get_tabhash_list(hand_info['HASH_ALGORITHM'])
             self._word_doc.add_paragraph('Hash algorithm:')
             for hs in hash_list:
                 self._word_doc.add_paragraph('.' + hs, style='List 2')
 
-        if hand_info['TABLE_SHARE']:
+        if 'TABLE_SHARE' in hand_info.keys():
             share_list = self.__get_tabshare_list(hand_info['TABLE_SHARE'])
             self._word_doc.add_paragraph('Table share:')
             for share in share_list:
                 self._word_doc.add_paragraph('.' + share, style='List 2')
 
-        if hand_info['TABLE_DESCRIPTION']:
-            desc_list = self.__get_tab_discriptions(hand_info['TABLE_DESCRIPTION'])
+        if 'entry_type' in hand_info.keys():
+            tab_str = 'Entry type: ' + hand_info['entry_type']
+            self._word_doc.add_paragraph(tab_str)
 
+        if 'TABLE_DESCRIPTION' in hand_info.keys():
+            desc_list = self.__get_tab_discriptions(hand_info['TABLE_DESCRIPTION'])
             for desc in desc_list:
                 self._word_doc.add_paragraph(desc)
+
 
     def __write_table_reginfo(self, reg_info):
         """
@@ -221,19 +226,22 @@ class WrodHandl(object):
         :param reg_info:
         :return:
         """
+        reg_head = dict()
+
         if self._word_doc == None:
             logger.info('The document is not open.')
             return
 
-        reg_head = reg_info['head_info']
-        reg_list = reg_info['reg_list']
+        key_list = reg_info['head_info'].keys()
+        for _key in key_list:
+            if reg_info['head_info'][_key] != None:
+                reg_head[_key] = reg_info['head_info'][_key]
 
-        # 根据多个key type 获取寄存器标题
         reg_head['KEY_TYPE'] = reg_name
-        print(reg_head)
         self.__write_hand_info(reg_head)
 
         # 将寄存器信息写入word表格
+        reg_list = reg_info['reg_list']
         index = 0
         for reg_tab in reg_list:
             self.__write_table_reginfo(reg_tab)
