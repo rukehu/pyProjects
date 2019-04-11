@@ -90,11 +90,11 @@ if __name__ == '__main__':
     logger.debug(excels_url)
     sw_control.make_word_dir()            # 检查word文档生成目录是否存在
 
-    for e_url in excels_url:
-        logger.debug(e_url)
-        sw_control.excel_to_word(e_url, config.WORD_DIR)
-        logger.debug('----------------------------------\r\n')
+    # for e_url in excels_url:
+    #     logger.debug(e_url)
+    #     sw_control.excel_to_word(e_url, config.WORD_DIR)
+    #     logger.debug('----------------------------------\r\n')
 
-    # # 单个文档测试
-    # e_url = 'D:\PyProjects\excel_word\ExcelTables\L3.xlsx'
-    # sw_control.excel_to_word(e_url, config.WORD_DIR)
+    # 单个文档测试
+    e_url = 'D:\PyProjects\excel_word\ExcelTables\L3.xlsx'
+    sw_control.excel_to_word(e_url, config.WORD_DIR)

@@ -165,7 +165,7 @@ class WrodHandl(object):
         self._tab_cnt += 1
         # styles = self._word_doc.styles
         # style = styles[WD_BUILTIN_STYLE.COMMENT_REFERENCE]
-        tab_pgr = self._word_doc.add_paragraph(style='TOA Heading')
+        tab_pgr = self._word_doc.add_paragraph(style='TOC Heading')
         tab_pgr.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         tab_run = tab_pgr.add_run(tab_name)
         font = tab_run.font
