@@ -1,16 +1,19 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from docx import Document, table
+from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.shared import Inches, Cm
+from docx.enum.style import WD_BUILTIN_STYLE
+from docx.shared import Pt
+from docx.shared import Inches
+from docx.shared import RGBColor
 import logging
 
 logger = logging.getLogger('WordHandl')
 
 FONT_NAME = 'Calibri'        # 设置默认字体
-REG_TAB_CLOUMN = 4           # 寄存器表格的列总量
-TAB_CNT_BASE = 0             # 表格起始号
+TAB_CLOUMN_CNT = 5           # 表格默认列数
+TAB_CNT_BASE = 1             # 表格起始号
 
 class WrodHandl(object):
     def __init__(self):
@@ -102,12 +105,18 @@ class WrodHandl(object):
         :param hand_info:
         :return:
         """
-        logger.debug(hand_info)
         have_key = False
-        self._word_doc.add_heading(hand_info['KEY_TYPE'], level=1)  # 写入寄存器表名
+        pgr = self._word_doc.add_heading(level=1)  # 写入寄存器表名
+        pgr.paragraph_format.space_before = Pt(10)
+        pgr.paragraph_format.space_after = Pt(10)
+        run = pgr.add_run(hand_info['KEY_TYPE'])
+        font = run.font
+        font.size = Pt(15)
+        font.color.rgb = RGBColor(0x0, 0x0, 0x0)
 
-        tab_cnt = 'Table count: ' + str(hand_info['TABLE_COUNT'])
-        self._word_doc.add_paragraph(tab_cnt)
+        if 'TABLE_COUNT' in hand_info.keys():
+            tab_cnt = 'Table count: ' + str(hand_info['TABLE_COUNT'])
+            self._word_doc.add_paragraph(tab_cnt)
 
         tab_bitwidth = 'Table bit width: '
         if 'TABLE_BITS_WIDTH' in hand_info.keys():
@@ -118,8 +127,9 @@ class WrodHandl(object):
         if have_key:
             self._word_doc.add_paragraph(tab_bitwidth)
 
-        tab_type = 'Table type: ' + hand_info['TABLE_TYPE'].lower().capitalize()
-        self._word_doc.add_paragraph(tab_type)
+        if 'TABLE_TYPE' in hand_info.keys():
+            tab_type = 'Table type: ' + hand_info['TABLE_TYPE'].lower().capitalize()
+            self._word_doc.add_paragraph(tab_type)
 
         if 'HASH_ALGORITHM' in hand_info.keys():
             hash_list = self.__get_tabhash_list(hand_info['HASH_ALGORITHM'])
@@ -149,31 +159,65 @@ class WrodHandl(object):
         :param reg_tab:
         :return:
         """
-        self._tab_cnt += 1
-
         # 添加表格标题
-        tab_name = 'Table ' + str(self._tab_cnt) + ': ' + reg_info['KEY_TYPE']
-        tab_pgr = self._word_doc.add_paragraph()
+        tab_name = 'Table ' + str(self._tab_cnt)
+        _nam = ': ' + reg_info['KEY_TYPE']
+        self._tab_cnt += 1
+        # styles = self._word_doc.styles
+        # style = styles[WD_BUILTIN_STYLE.COMMENT_REFERENCE]
+        tab_pgr = self._word_doc.add_paragraph(style='TOA Heading')
         tab_pgr.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         tab_run = tab_pgr.add_run(tab_name)
-        tab_run.bold = True
+        font = tab_run.font
+        font.color.rgb = RGBColor(0x0, 0x0, 0x0)
+        font.size = Pt(11)
+        font.italic = True
+        tab_run = tab_pgr.add_run(_nam)
+        font = tab_run.font
+        font.color.rgb = RGBColor(0x0, 0x0, 0x0)
+        font.size = Pt(11)
+        font.italic = True
+        # 设置段落距离
+        tab_pgr.paragraph_format.space_before = Pt(10)
+        tab_pgr.paragraph_format.space_after = Pt(5)
+
+        bit_list = reg_info['bit_list']
+        have_note = False
+        for bit_info in bit_list:           # 查询是否存在note列
+            if bit_info['NOTES'] != None:
+                have_note = True
+                break
 
         # 添加寄存器表格信息
-        bit_list = reg_info['bit_list']
         tab_row = len(bit_list) + 1         # 需添加表头
-        tab_cloumn = REG_TAB_CLOUMN
+        tab_cloumn = TAB_CLOUMN_CNT
+
+        width_0 = Inches(0.7)
+        width_1 = Inches(1.8)
+        width_2 = Inches(2.2)
+        width_3 = Inches(0.7)
+        width_4 = Inches(0.8)
+        if not have_note:
+            tab_cloumn -= 1
+            width_2 = Inches(3.0)
+
         reg_tab = self._word_doc.add_table(tab_row, tab_cloumn, 'Table Grid')
 
         # 设置表格宽度
         reg_tab.autofit = False
         for idx in range(tab_row):
-            reg_tab.cell(idx, 0).width = Inches(0.8)
-            reg_tab.cell(idx, 1).width = Inches(2.0)
-            reg_tab.cell(idx, 2).width = Inches(2.2)
-            reg_tab.cell(idx, 3).width = Inches(0.8)
+            reg_tab.cell(idx, 0).width = width_0
+            reg_tab.cell(idx, 1).width = width_1
+            reg_tab.cell(idx, 2).width = width_2
+            reg_tab.cell(idx, 3).width = width_3
+            if have_note:
+                reg_tab.cell(idx, 4).width = width_4
 
         # 写入表头信息
         head_arr = ['Bits', 'Name', 'Description', 'Default']
+        if 'NOTES' in bit_info.keys():
+            head_arr.append('Notes')
+
         for idx in range(tab_cloumn):
             tab_run = reg_tab.cell(0, idx).paragraphs[0].add_run(head_arr[idx])
             tab_run.bold = True
@@ -187,8 +231,6 @@ class WrodHandl(object):
             if bits == None:
                 bits = bit_info['SUB_FIELD_BITS']
             tab_cells[0].text = str(bits)
-            # tab_cells[0].text().font.name
-            # tab_cells[0].width = Inches(4)
 
             name = bit_info['FIELD_NAME']
             if name == None:
@@ -202,6 +244,10 @@ class WrodHandl(object):
             if default != None:
                 tab_cells[3].text = str(default)
 
+            note = bit_info['NOTES']
+            if have_note and note != None:
+                tab_cells[4].text = str(note)
+
             row_idx += 1
 
 
@@ -211,6 +257,7 @@ class WrodHandl(object):
         :param word_path:
         :return:
         """
+        self._tab_cnt = TAB_CNT_BASE
         try:
             self._word_doc = Document(word_path)
         except:
@@ -242,14 +289,9 @@ class WrodHandl(object):
 
         # 将寄存器信息写入word表格
         reg_list = reg_info['reg_list']
-        index = 0
         for reg_tab in reg_list:
             self.__write_table_reginfo(reg_tab)
 
-            index += 1
-            if index < len(reg_list):
-                self._word_doc.add_paragraph()
-
     def write_word_end(self, word_url):
-        self._word_doc.add_page_break()
+        # self._word_doc.add_page_break()
         self._word_doc.save(word_url)

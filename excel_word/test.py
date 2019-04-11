@@ -7,12 +7,6 @@ document = Document()
 
 
 idx = 0
-
-if str(0) != None:
-    print('0 != None')
-else:
-    print('0 == None')
-
 styles = Document().styles
 for sty in styles:
     if sty.type == WD_STYLE_TYPE.PARAGRAPH:

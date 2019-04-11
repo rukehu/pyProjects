@@ -101,6 +101,7 @@ class ExcelHeadl(object):
                 for cloumn_idx in range(tab_len):
                     if cloumn_idx > 0:
                         bit_dct[tab_list[cloumn_idx]] = row[cloumn_idx].value
+
                 if bit_dct['FIELD_NAME'] or bit_dct['SUB_FIELD_NAME']:
                     bit_list.append(bit_dct)
             row_idx += 1

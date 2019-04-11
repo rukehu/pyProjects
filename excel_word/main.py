@@ -38,6 +38,8 @@ class SwitchControl(object):
             # subdir #当前主目录下的所有目录
             # files  #当前主目录下的所有文件
             for file_name in files:
+                if file_name.find('~$', 0, 2) != -1:
+                    continue
                 apath = os.path.join(maindir, file_name)  # 合并成一个完整路径
                 ext = os.path.splitext(apath)[1]          # 获取文件后缀 [0]获取的是除了文件名以外的内容
 
@@ -68,7 +70,8 @@ class SwitchControl(object):
         for sheet in sheets:
             logger.debug(sheet)
             reg_info = self._excel_headl.get_registers_info(sheet)
-            logger.debug(reg_info)
+            logger.debug(reg_info['head_info'])
+            logger.debug(reg_info['reg_list'])
             self._word_headl.write_register_toword(sheet, reg_info)
 
         self._excel_headl.read_excel_end()
@@ -84,12 +87,14 @@ if __name__ == '__main__':
     sw_control = SwitchControl()
 
     excels_url = sw_control.get_excels_url(config.EXCEL_DIR)
+    logger.debug(excels_url)
     sw_control.make_word_dir()            # 检查word文档生成目录是否存在
-
-    # e_url = 'D:\PyProjects\excel_word\ExcelTables\HIRAR.xlsx'
-    # sw_control.excel_to_word(e_url, config.WORD_DIR)
 
     for e_url in excels_url:
         logger.debug(e_url)
         sw_control.excel_to_word(e_url, config.WORD_DIR)
         logger.debug('----------------------------------\r\n')
+
+    # # 单个文档测试
+    # e_url = 'D:\PyProjects\excel_word\ExcelTables\L3.xlsx'
+    # sw_control.excel_to_word(e_url, config.WORD_DIR)
