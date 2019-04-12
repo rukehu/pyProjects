@@ -7,3 +7,5 @@ build/
 ~$*
 *docx
 sequence.json
+UI_*.py
+test.py

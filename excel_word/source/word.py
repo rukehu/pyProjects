@@ -3,7 +3,6 @@
 
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.enum.style import WD_BUILTIN_STYLE
 from docx.shared import Pt
 from docx.shared import Inches
 from docx.shared import RGBColor
@@ -287,6 +286,10 @@ class WrodHandl(object):
                 tab_cells[note_idx].text = str(note)
 
             row_idx += 1
+
+    def set_table_number(self, base_num):
+        if base_num > 0:
+            self._tab_cnt = base_num
 
     def open_word(self, word_path):
         """

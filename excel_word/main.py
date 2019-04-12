@@ -18,6 +18,52 @@ class SwitchControl(object):
         self._excel_headl = ExcelHeadl()
         self._word_headl = WrodHandl()
 
+    def __get_excelurl_info(sel):
+        """
+        读取json文件获取excels 转换信息
+        :return:
+        """
+        load_list = list()
+        if os.path.exists(config.SEQUENCE_URL) and os.path.getsize(config.SEQUENCE_URL) > 0:
+            with open(config.SEQUENCE_URL, 'r') as f_json:
+                load_list = json.load(f_json)
+
+        return load_list
+
+    def __update_sequence_list(self, excels_url):
+        """
+        更新寄存器顺序表，不存在则生成
+        :return:
+        """
+        load_list = list()
+        sequen_list = list()
+        update = False
+
+        if os.path.exists(config.SEQUENCE_URL) and os.path.getsize(config.SEQUENCE_URL) > 0:
+            with open(config.SEQUENCE_URL, 'r') as f_json:
+                load_list = json.load(f_json)
+                sequen_list = load_list
+                logger.debug(sequen_list)
+
+        for excel in excels_url:
+            url_exist = False
+            for load_dct in load_list:
+                if excel == load_dct['url']:
+                    url_exist = True
+                    break
+
+            sequen_dct = {}
+            if not url_exist:
+                sequen_dct['url'] = excel
+                sequen_dct['table_number'] = 0
+                sequen_list.append(sequen_dct)
+                update = True
+
+        if update:
+            with open(config.SEQUENCE_URL, 'w') as f_json:
+                json_str = json.dumps(sequen_list, indent=4)
+                f_json.write(json_str)
+
     def get_excels_url(self, excel_dir):
         """
         根据指定路径获取excels
@@ -41,38 +87,6 @@ class SwitchControl(object):
                     excel_files.append(apath)
 
         return excel_files
-
-    def update_sequence_list(self, excels_url):
-        """
-        更新寄存器顺序表，不存在则生成
-        :return:
-        """
-        load_list = list()
-        sequen_list = list()
-
-        if os.path.exists(config.SEQUENCE_URL) and os.path.getsize(config.SEQUENCE_URL) > 0:
-            with open(config.SEQUENCE_URL, 'r') as f_json:
-                load_list = json.load(f_json)
-                sequen_list = load_list
-                logger.debug(sequen_list)
-
-        for excel in excels_url:
-            url_exist = False
-            for load_dct in load_list:
-                if excel == load_dct['url']:
-                    url_exist = True
-                    break
-
-            sequen_dct = {}
-            if not url_exist:
-                sequen_dct['url'] = excel
-                sequen_dct['table_number'] = 0
-                sequen_list.append(sequen_dct)
-
-        if len(sequen_list) > 0:
-            with open(config.SEQUENCE_URL, 'w') as f_json:
-                json_str = json.dumps(sequen_list, indent=4)
-                f_json.write(json_str)
 
 
     def make_word_dir(self):
@@ -108,25 +122,50 @@ class SwitchControl(object):
         word_url = word_dir + '\\' + word_name
         self._word_headl.write_word_end(word_url)
 
+    def excels_to_word(self, excels_url, word_url):
+        """
+        :param excels_url:
+        :param word_path:
+        :return:
+        """
+        self.__update_sequence_list(excels_url)
+        self._word_headl.open_word(None)
+        excels_info = self.__get_excelurl_info()
 
-    def excels_to_word(self, excels_url, word_path):
-        pass
+        for excel in excels_info:
+            if not self._excel_headl.open_excel(excel['url']):
+                continue
+            self._word_headl.set_table_number( excel['table_number'])
 
+            sheets = self._excel_headl.get_excel_sheets()
+            if len(sheets) > 0 and sheets[0] == u'版本说明':
+                sheets.pop(0)
 
+            for sheet in sheets:
+                logger.debug(sheet)
+                reg_info = self._excel_headl.get_registers_info(sheet)
+                logger.debug(reg_info['head_info'])
+                logger.debug(reg_info['reg_list'])
+                self._word_headl.write_register_toword(sheet, reg_info)
+
+            self._excel_headl.read_excel_end()
+
+        self._word_headl.write_word_end(word_url)
 
 if __name__ == '__main__':
     sw_control = SwitchControl()
 
     excels_url = sw_control.get_excels_url(config.EXCEL_DIR)
     logger.debug(excels_url)
-    sw_control.update_sequence_list(excels_url)
     sw_control.make_word_dir()            # 检查word文档生成目录是否存在
 
-    # for e_url in excels_url:
-    #     logger.debug(e_url)
-    #     sw_control.excel_to_word(e_url, config.WORD_DIR)
-    #     logger.debug('----------------------------------\r\n')
+    for e_url in excels_url:
+        logger.debug(e_url)
+        sw_control.excel_to_word(e_url, config.WORD_DIR)
+        logger.debug('----------------------------------\r\n')
 
     # 单个文档测试
     # e_url = 'D:\PyProjects\excel_word\ExcelTables\L3.xlsx'
     # sw_control.excel_to_word(e_url, config.WORD_DIR)
+
+    sw_control.excels_to_word(excels_url, config.WORD_URL)
