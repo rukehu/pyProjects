@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger('WordHandl')
 
 FONT_NAME = 'Calibri'        # 设置默认字体
-TAB_CLOUMN_CNT = 5           # 表格默认列数
+TAB_CLOUMN_CNT = 6           # 表格默认列数
 TAB_CNT_BASE = 1             # 表格起始号
 
 class WrodHandl(object):
@@ -111,6 +111,7 @@ class WrodHandl(object):
         pgr.paragraph_format.space_after = Pt(10)
         run = pgr.add_run(hand_info['KEY_TYPE'])
         font = run.font
+        font.name = FONT_NAME
         font.size = Pt(15)
         font.color.rgb = RGBColor(0x0, 0x0, 0x0)
 
@@ -163,17 +164,18 @@ class WrodHandl(object):
         tab_name = 'Table ' + str(self._tab_cnt)
         _nam = ': ' + reg_info['KEY_TYPE']
         self._tab_cnt += 1
-        # styles = self._word_doc.styles
-        # style = styles[WD_BUILTIN_STYLE.COMMENT_REFERENCE]
         tab_pgr = self._word_doc.add_paragraph(style='TOC Heading')
         tab_pgr.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         tab_run = tab_pgr.add_run(tab_name)
+
         font = tab_run.font
+        font.name = FONT_NAME
         font.color.rgb = RGBColor(0x0, 0x0, 0x0)
         font.size = Pt(11)
         font.italic = True
         tab_run = tab_pgr.add_run(_nam)
         font = tab_run.font
+        font.name = FONT_NAME
         font.color.rgb = RGBColor(0x0, 0x0, 0x0)
         font.size = Pt(11)
         font.italic = True
@@ -182,41 +184,72 @@ class WrodHandl(object):
         tab_pgr.paragraph_format.space_after = Pt(5)
 
         bit_list = reg_info['bit_list']
+        tab_row = len(bit_list) + 1  # 需添加表头
+        head_arr = ['Bits', 'Name', 'Description', 'Default']
+
         have_note = False
+        have_iskey = False
+
+        if 'IS_KEY' in bit_list[0].keys():
+            head_arr.append('IsKey')
+            have_iskey = True
+
         for bit_info in bit_list:           # 查询是否存在note列
-            if bit_info['NOTES'] != None:
+            if bit_info['NOTES'] != None and not have_note:
+                head_arr.append('Notes')
                 have_note = True
                 break
 
-        # 添加寄存器表格信息
-        tab_row = len(bit_list) + 1         # 需添加表头
+        # 设置表格列数与宽度
         tab_cloumn = TAB_CLOUMN_CNT
-
         width_0 = Inches(0.7)
-        width_1 = Inches(1.8)
-        width_2 = Inches(2.2)
+        width_1 = Inches(1.6)
+        width_2 = Inches(1.9)
         width_3 = Inches(0.7)
-        width_4 = Inches(0.8)
-        if not have_note:
+        width_4 = Inches(0.5)
+        width_5 = Inches(0.8)
+
+        iskey_idx = 4
+        note_idx = 5
+        if not have_iskey and not have_note:
+            tab_cloumn -= 2
+            width_1 = Inches(2.0)
+            width_2 = Inches(2.8)
+            width_3 = Inches(0.7)
+
+        elif have_iskey and not have_note:
             tab_cloumn -= 1
-            width_2 = Inches(3.0)
+            width_1 = Inches(1.8)
+            width_2 = Inches(2.5)
+            width_3 = Inches(0.7)
+            width_4 = Inches(0.5)
+
+        elif have_note and not have_iskey:
+            tab_cloumn -= 1
+            note_idx = 4
+            width_0 = Inches(0.7)
+            width_1 = Inches(1.8)
+            width_2 = Inches(2.2)
+            width_3 = Inches(0.7)
+            width_4 = Inches(0.8)
 
         reg_tab = self._word_doc.add_table(tab_row, tab_cloumn, 'Table Grid')
 
         # 设置表格宽度
+
         reg_tab.autofit = False
         for idx in range(tab_row):
             reg_tab.cell(idx, 0).width = width_0
             reg_tab.cell(idx, 1).width = width_1
             reg_tab.cell(idx, 2).width = width_2
             reg_tab.cell(idx, 3).width = width_3
-            if have_note:
-                reg_tab.cell(idx, 4).width = width_4
-
-        # 写入表头信息
-        head_arr = ['Bits', 'Name', 'Description', 'Default']
-        if 'NOTES' in bit_info.keys():
-            head_arr.append('Notes')
+            if have_note and have_iskey:
+                reg_tab.cell(idx, iskey_idx).width = width_4
+                reg_tab.cell(idx, note_idx).width = width_5
+            elif have_iskey:
+                reg_tab.cell(idx, iskey_idx).width = width_4
+            elif have_note:
+                reg_tab.cell(idx, note_idx).width = width_4
 
         for idx in range(tab_cloumn):
             tab_run = reg_tab.cell(0, idx).paragraphs[0].add_run(head_arr[idx])
@@ -244,12 +277,16 @@ class WrodHandl(object):
             if default != None:
                 tab_cells[3].text = str(default)
 
+            if have_iskey:
+                iskey = bit_info['IS_KEY']
+                if iskey != None:
+                    tab_cells[iskey_idx].text = str(iskey)
+
             note = bit_info['NOTES']
             if have_note and note != None:
-                tab_cells[4].text = str(note)
+                tab_cells[note_idx].text = str(note)
 
             row_idx += 1
-
 
     def open_word(self, word_path):
         """

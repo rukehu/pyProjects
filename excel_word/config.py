@@ -6,3 +6,5 @@ EXCEL_DIR = 'D:\PyProjects\excel_word\ExcelTables'
 
 # word文档输出路径
 WORD_DIR = 'D:\PyProjects\excel_word\WordTables'
+
+SEQUENCE_URL = 'sequence.json'

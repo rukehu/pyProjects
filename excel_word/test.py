@@ -1,22 +1,20 @@
+# -*- coding: utf-8 -*-
+
 from docx import Document
-from docx.shared import Inches
-from docx import Document
+
+from docx.shared import Pt
+
 from docx.enum.style import WD_STYLE_TYPE
 
-document = Document()
+doc = Document()
 
+for i in range(10):
+    p = doc.add_paragraph(u'段落 %d' % i)
 
-idx = 0
-styles = document.styles
-for sty in styles:
-    if sty.type == WD_STYLE_TYPE.PARAGRAPH:
-        idx += 1
-        idx_str = str(idx)
-        document.add_paragraph(idx_str + sty.name, style=sty.name)
+    style = doc.styles.add_style('UserStyle%d' % i, WD_STYLE_TYPE.PARAGRAPH)
 
+    style.font.size = Pt(i + 20)
 
-for idx in range(10):
-    document.add_heading('Heading'+str(idx), level=idx)
+    p.style = style
 
-
-document.save('demo.docx')
+doc.save('4-1.docx')

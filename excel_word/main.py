@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import sys, os
+import json
 from source.excel import ExcelHeadl
 from source.word import WrodHandl
 import logging
@@ -17,10 +18,6 @@ class SwitchControl(object):
         self._excel_headl = ExcelHeadl()
         self._word_headl = WrodHandl()
 
-
-        self._excel_urls = list()
-        self._sheets = list()
-
     def get_excels_url(self, excel_dir):
         """
         根据指定路径获取excels
@@ -34,9 +31,6 @@ class SwitchControl(object):
             return excel_files
 
         for maindir, subdir, files in os.walk(excel_dir):
-            # maindir #当前主目录
-            # subdir #当前主目录下的所有目录
-            # files  #当前主目录下的所有文件
             for file_name in files:
                 if file_name.find('~$', 0, 2) != -1:
                     continue
@@ -48,6 +42,39 @@ class SwitchControl(object):
 
         return excel_files
 
+    def update_sequence_list(self, excels_url):
+        """
+        更新寄存器顺序表，不存在则生成
+        :return:
+        """
+        load_list = list()
+        sequen_list = list()
+
+        if os.path.exists(config.SEQUENCE_URL) and os.path.getsize(config.SEQUENCE_URL) > 0:
+            with open(config.SEQUENCE_URL, 'r') as f_json:
+                load_list = json.load(f_json)
+                sequen_list = load_list
+                logger.debug(sequen_list)
+
+        for excel in excels_url:
+            url_exist = False
+            for load_dct in load_list:
+                if excel == load_dct['url']:
+                    url_exist = True
+                    break
+
+            sequen_dct = {}
+            if not url_exist:
+                sequen_dct['url'] = excel
+                sequen_dct['table_number'] = 0
+                sequen_list.append(sequen_dct)
+
+        if len(sequen_list) > 0:
+            with open(config.SEQUENCE_URL, 'w') as f_json:
+                json_str = json.dumps(sequen_list, indent=4)
+                f_json.write(json_str)
+
+
     def make_word_dir(self):
         """
         检查word 文档目录是否存在，不存在则创建
@@ -57,7 +84,6 @@ class SwitchControl(object):
             os.makedirs(config.WORD_DIR)
 
     def excel_to_word(self, excel_url, word_dir):
-
         if not self._excel_headl.open_excel(excel_url):
             return
 
@@ -83,11 +109,17 @@ class SwitchControl(object):
         self._word_headl.write_word_end(word_url)
 
 
+    def excels_to_word(self, excels_url, word_path):
+        pass
+
+
+
 if __name__ == '__main__':
     sw_control = SwitchControl()
 
     excels_url = sw_control.get_excels_url(config.EXCEL_DIR)
     logger.debug(excels_url)
+    sw_control.update_sequence_list(excels_url)
     sw_control.make_word_dir()            # 检查word文档生成目录是否存在
 
     # for e_url in excels_url:
@@ -96,5 +128,5 @@ if __name__ == '__main__':
     #     logger.debug('----------------------------------\r\n')
 
     # 单个文档测试
-    e_url = 'D:\PyProjects\excel_word\ExcelTables\L3.xlsx'
-    sw_control.excel_to_word(e_url, config.WORD_DIR)
+    # e_url = 'D:\PyProjects\excel_word\ExcelTables\L3.xlsx'
+    # sw_control.excel_to_word(e_url, config.WORD_DIR)
