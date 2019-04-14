@@ -1,15 +1,17 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from PySide2.QtCore import QFileInfo
+import os
+from PySide2 import QtCore
 from PySide2.QtWidgets import *
 from ui.designer.UI_controlwidget import Ui_ControlWgt
 import config
-import logging
+import logging, json
 
 logger = logging.getLogger('controlwgt')
 
 class ControlWidget(QWidget, Ui_ControlWgt):
+    signal_inport_excels = QtCore.Signal(list)
 
     def __init__(self):
         super(ControlWidget, self).__init__()
@@ -24,34 +26,56 @@ class ControlWidget(QWidget, Ui_ControlWgt):
 
         file_path = QFileDialog.getOpenFileNames(self, '选择.xlsx/.json文件', filter=excels + ';;' + json_f)
         logger.debug(file_path[0])
-        path_dct = dict()
+        load_list = list()
 
         if file_path[1] == json_f:
             _path = file_path[0]
-            path_dct['json'] = _path
-            self.path_edit.setText(_path)
-            return path_dct
+            self.path_edit.setText(_path[0])
+
+            with open(_path[0], 'r') as f_json:
+                load_list = json.load(f_json)
 
         elif file_path[1] == excels:
             paths = file_path[0]
-            path_dct['excels'] = paths
 
             if len(paths) == 1:
                 self.path_edit.setText(paths[0])
             else:
-                f_info = QFileInfo(paths[0])
+                f_info = QtCore.QFileInfo(paths[0])
                 self.path_edit.setText(f_info.absolutePath())
+                config.EXCEL_DIR = f_info.absolutePath()
 
-            return path_dct
+            for _path in paths:
+                path_dct = {}
+                path_dct['url'] = _path
+                path_dct['table_number'] = -1
+                load_list.append(path_dct)
 
-        return None
+        print(load_list)
+
+        if len(load_list):
+            self.signal_inport_excels.emit(load_list)
 
     def __select_btn_clicked(self):
         dir = QFileDialog.getExistingDirectory()
         if len(dir) > 0:
             self.export_edit.setText(dir)
-            config.WORD_URL = dir + '/' + config.TABLES_NAME
+            config.WORD_URL = dir + '/' + 'tables.docx'
             config.WORD_DIR = dir
+
+    def get_file_select_state(self):
+        state_dct = dict()
+        if self.files_box.isChecked():
+            state_dct['files'] = True
+        else:
+            state_dct['files'] = False
+
+        if self.once_box.isChecked():
+            state_dct['once'] = True
+        else:
+            state_dct['once'] = False
+
+        return state_dct
 
 if __name__ == '__main__':
     import sys

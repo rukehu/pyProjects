@@ -89,6 +89,11 @@
        </column>
        <column>
         <property name="text">
+         <string>顺序</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
          <string>文件</string>
         </property>
        </column>
@@ -116,6 +121,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="remove_btn">
+           <property name="text">
+            <string>删除</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="reset_btn">
            <property name="text">
             <string>重置编号</string>
@@ -123,7 +135,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="save_bt">
+          <widget class="QPushButton" name="save_btn">
            <property name="text">
             <string>保存配置</string>
            </property>

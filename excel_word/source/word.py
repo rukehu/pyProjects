@@ -12,12 +12,11 @@ logger = logging.getLogger('WordHandl')
 
 FONT_NAME = 'Calibri'        # 设置默认字体
 TAB_CLOUMN_CNT = 6           # 表格默认列数
-TAB_CNT_BASE = 1             # 表格起始号
 
 class WrodHandl(object):
     def __init__(self):
         self._word_doc = None
-        self._tab_cnt = TAB_CNT_BASE
+        self._tab_cnt = 1
 
     def __get_tabshare_list(self, tab_shares):
         """
@@ -297,7 +296,6 @@ class WrodHandl(object):
         :param word_path:
         :return:
         """
-        self._tab_cnt = TAB_CNT_BASE
         try:
             self._word_doc = Document(word_path)
         except:
