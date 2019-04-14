@@ -51,8 +51,6 @@ class ControlWidget(QWidget, Ui_ControlWgt):
                 path_dct['table_number'] = -1
                 load_list.append(path_dct)
 
-        print(load_list)
-
         if len(load_list):
             self.signal_inport_excels.emit(load_list)
 

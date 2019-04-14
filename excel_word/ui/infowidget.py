@@ -6,6 +6,7 @@ from PySide2.QtWidgets import *
 from ui.designer.UI_infowidget import Ui_Form
 import logging
 
+
 class InfoWidget(QWidget, Ui_Form):
     new_message = QtCore.Signal(object)
 
@@ -24,7 +25,7 @@ class InfoWidget(QWidget, Ui_Form):
         self.setupUi(self)
 
         self.log_handler = InfoWidget.LogHandler(self.setTipInfo)
-        self.log_handler.setLevel(logging.NOTSET)
+        self.log_handler.setLevel(logging.INFO)
         logging.getLogger().addHandler(self.log_handler)
 
         self.new_message.connect(self.on_message)
@@ -34,7 +35,6 @@ class InfoWidget(QWidget, Ui_Form):
 
     def on_message(self, record):
         msg = self.log_handler.format(record)
-        print(msg)
         self.textEdit.append(msg)
 
 
@@ -46,7 +46,6 @@ if __name__ == '__main__':
     MainWidget = InfoWidget()
     MainWidget.setWindowTitle("control")
     MainWidget.show()
-    print('2222222222')
     logger = logging.getLogger('test')
     logger.debug('hello')
     sys.exit(app.exec_())

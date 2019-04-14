@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import os
 from PySide2.QtWidgets import *
 from ui.designer.UI_TerminalWidget import Ui_Terminal
 from ui.ctlwidget import ControlWidget
@@ -10,7 +11,6 @@ from source.excel import ExcelHeadl
 from source.word import WrodHandl
 import config
 import logging
-
 
 
 logger = logging.getLogger('Terminal')
@@ -74,6 +74,7 @@ class Terminal(QWidget, Ui_Terminal):
         self._word_headl.write_word_end(word_url)
 
     def excels_to_words(self, excels_dct, word_dir):
+        logger.info(excels_dct)
         for e_dct in excels_dct:
             num = e_dct['table_number']
             if num > 0:
@@ -87,6 +88,7 @@ class Terminal(QWidget, Ui_Terminal):
         :return:
         """
         self._word_headl.open_word(None)
+        logger.info(excels_dct)
 
         for excel in excels_dct:
             if not self._excel_headl.open_excel(excel['url']):
@@ -110,14 +112,18 @@ class Terminal(QWidget, Ui_Terminal):
 
     def start_excel_to_word(self, sequen_list):
         sw_state = self._ctl_widget.get_file_select_state()
+        if not os.path.isdir(config.WORD_DIR):
+            os.makedirs(config.WORD_DIR)
 
         if sw_state['files']:
             self._word_headl.set_table_number(1)
             self.excels_to_words(sequen_list, config.WORD_DIR)
+            logger.info('excels to words end...')
 
         if sw_state['once']:
             self._word_headl.set_table_number(1)
             self.excels_to_word(sequen_list, config.WORD_URL)
+            logger.info('excels to word end...')
 
 if __name__ == '__main__':
     import sys
