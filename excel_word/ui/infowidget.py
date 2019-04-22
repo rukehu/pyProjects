@@ -25,7 +25,7 @@ class InfoWidget(QWidget, Ui_Form):
         self.setupUi(self)
 
         self.log_handler = InfoWidget.LogHandler(self.setTipInfo)
-        self.log_handler.setLevel(logging.INFO)
+        self.log_handler.setLevel(logging.NOTSET)
         logging.getLogger().addHandler(self.log_handler)
 
         self.new_message.connect(self.on_message)
@@ -36,7 +36,6 @@ class InfoWidget(QWidget, Ui_Form):
     def on_message(self, record):
         msg = self.log_handler.format(record)
         self.textEdit.append(msg)
-
 
 
 if __name__ == '__main__':
