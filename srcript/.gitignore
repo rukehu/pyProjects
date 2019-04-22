@@ -1,0 +1,14 @@
+.idea/
+venv/
+__pycache__/
+*.autosave
+build/
+*.spec
+*.swp
+~$*
+*.pyc
+*.xml
+*.a
+dist/
+python_for_kernel/
+*.log

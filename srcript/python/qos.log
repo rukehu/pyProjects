@@ -1,0 +1,9 @@
+40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1091] ERROR int() can't convert non-string with explicit base
+40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1092] ERROR error: physical_table table.nrows = 140, rownum = 2
+
+40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1091] ERROR 'float' object has no attribute 'find'
+40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1092] ERROR error: Sheet1 table.nrows = 32, rownum = 1
+
+40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1001] ERROR int() can't convert non-string with explicit base
+40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1002] ERROR error: EP_COUNT table.nrows = 55, rownum = 5
+

@@ -1,0 +1,380 @@
+
+static uint8_t chip_id = 0;
+extern sf_status_t soc_reg_write(uint32_t chip_id, uint8_t bar_id, uint32_t addr, uint8_t *reg_data);
+extern sf_status_t soc_reg_read(uint32_t chip_id, uint8_t bar_id, uint32_t addr, uint8_t *reg_data);
+
+void pd_probe_chip_id_set(char_t _chip_id)
+{
+    chip_id = _chip_id;
+}
+
+
+static void write_log(int32_t fd, char_t *fmt, ...)
+{
+	char_t buf[10000];
+	va_list ptr;
+	va_start(ptr, fmt);
+	vsprintf(buf, fmt, ptr);
+	write(fd, buf, strlen(buf));
+	va_end(ptr);
+}
+
+static void init_pd_list()
+{
+	pd_list = &slice_to_pa_f_0;
+	slice_to_pa_f_0.next = &pa2tt_0;
+	pa2tt_0.next = &pa_mpls2tt_pd_0;
+	pa_mpls2tt_pd_0.next = &tt2pa_mpls_data_0;
+	tt2pa_mpls_data_0.next = &tt2vcap_0;
+	tt2vcap_0.next = &tt_vlan_pd_0;
+	tt_vlan_pd_0.next = &tt_l2_r_0;
+	tt_l2_r_0.next = &tt_l3_fifo_0;
+	tt_l3_fifo_0.next = &tt_icap_fifo_dout_0;
+	tt_icap_fifo_dout_0.next = &TT2PD_EDITOR_f_0;
+	TT2PD_EDITOR_f_0.next = &tt_mpls_ifc_0;
+	tt_mpls_ifc_0.next = &tt_port_ifc_0;
+	tt_port_ifc_0.next = &TT_IMDA_SOP_0;
+	TT_IMDA_SOP_0.next = &vcap_vlan_pd_0;
+	vcap_vlan_pd_0.next = &vcap_vfp_ifc_0;
+	vcap_vfp_ifc_0.next = &vlan_ifc_0;
+	vlan_ifc_0.next = &vlan_vxlat_ifc_0;
+	vlan_vxlat_ifc_0.next = &rtag_l3_fifo_0;
+	rtag_l3_fifo_0.next = &ra_l2_r_0;
+	ra_l2_r_0.next = &l2_l3_pd_0;
+	l2_l3_pd_0.next = &l2_svp_ifc_0;
+	l2_svp_ifc_0.next = &l2_vfi_ifc_0;
+	l2_vfi_ifc_0.next = &l3_icap_pd_0;
+	l3_icap_pd_0.next = &l3_entry_ifc_0;						
+	l3_entry_ifc_0.next = &l3_def_ifc_0;
+	l3_def_ifc_0.next = &l3_iif_ifc_0;
+	l3_iif_ifc_0.next = &l3_vrf_ifc_0;
+	l3_vrf_ifc_0.next = &IM2DA_r_0;
+	IM2DA_r_0.next = &Post_QD_r_0;
+	Post_QD_r_0.next = &PRE_PD_r_0;
+	PRE_PD_r_0.next = &EL32EVLAN_r_0;
+	EL32EVLAN_r_0.next = &el3_to_pea_fifo_0;
+	el3_to_pea_fifo_0.next = &el3_port_efc_0;									
+	el3_port_efc_0.next = &el3_nh_efc_0;							
+	el3_nh_efc_0.next = &el3_dvp_efc_0;
+	el3_dvp_efc_0.next = &evlan_vxlate_efc_0;
+	evlan_vxlate_efc_0.next = &mirror_to_pea_pd_0;				
+	mirror_to_pea_pd_0.next = &pab_ecap_pd_0;
+	pab_ecap_pd_0.next = &pea_to_pac_pd_0;
+	pea_to_pac_pd_0.next = &PAC2PEB_f_0;
+	PAC2PEB_f_0.next = &EVLAN_FILTER2PEB_r_0;
+	EVLAN_FILTER2PEB_r_0.next = NULL;
+}
+
+static int32_t set_all_pd_probe_enable()
+{
+	uint8_t *data;
+	uint32_t  bar, addr;
+    int32_t i;
+	uint32_t bypass_base[4]   = {54,    55,    2,     33};
+	uint32_t bypass_offset[4] = {0x267, 0x267, 0x035, 0x080};
+    uint8_t *temp_data;
+    struct enable_pd_probe *enable_pd_probe_list;
+
+	data = (uint8_t *)sal_malloc(8, "SHELL");
+	if (data == NULL) 
+	{
+		debug(ERROR, "Could not malloc memory for pio write\n");
+		return -1;
+	}
+	bar = 4;
+
+	sal_memset(data, 0, 8);
+    
+	i = 0;
+	for(; i<4; i++)
+	{
+		addr = (bypass_base[i] << 16) + (bypass_offset[i] << 4);
+		soc_reg_write(chip_id, bar, addr, data);
+	}
+	
+	temp_data = (uint8_t *)sal_malloc(1, "SHELL");
+	sal_memset(temp_data, 3, 1);
+	enable_pd_probe_list = enable_pd_probe_head;
+	while(enable_pd_probe_list != NULL)
+	{
+		sal_memset(data, 0, 8);
+		addr = (enable_pd_probe_list->base_addr << 16) + (enable_pd_probe_list->offset_addr << 4);
+		soc_reg_read(chip_id, bar, addr, data);
+		set_field_to_data(data, temp_data, 2, 0);
+		soc_reg_write(chip_id, bar, addr, data);
+		/*
+		debug(INFO, "<base_addr = %d, offset = %d, data =0x", enable_pd_probe_list->base_addr, enable_pd_probe_list->offset_addr);
+		int32_t i = 7;
+		for(; i>=0; i--)
+		{
+			debug(INFO, "%02x", *(data + i));
+		}
+		debug(INFO, ">\n");
+		*/
+		enable_pd_probe_list = enable_pd_probe_list->next;
+	}
+	
+	sal_free(temp_data);
+	sal_free(data);
+
+	return 0;
+}
+
+static int32_t set_all_pd_probe_disable()
+{
+    uint8_t *data;
+	uint32_t  bar, addr;
+    uint8_t *temp_data;
+    struct enable_pd_probe *enable_pd_probe_list;
+
+	data = (uint8_t *)sal_malloc(8, "SHELL");
+	if (data == NULL) 
+	{
+		debug(ERROR, "Could not malloc memory for pio write\n");
+    	return -1;
+	}
+	bar = 4;
+
+	/*
+	uint32_t bypass_base[4]   = {54,    55,    2,     33};
+	uint32_t bypass_offset[4] = {0x267, 0x267, 0x035, 0x080};
+	sal_memset(data, 0, 8);
+	int32_t i = 0;
+	for(; i<4; i++)
+	{
+		addr = (bypass_base[i] << 16) + (bypass_offset[i] << 4);
+		fpga_user_pio_write(fpga, pio.bar, pio.data, pio.len, pio.addr);
+	}
+	*/
+	temp_data = (uint8_t *)sal_malloc(1, "SHELL");
+	sal_memset(temp_data, 0, 1);
+	enable_pd_probe_list = enable_pd_probe_head;
+	while(enable_pd_probe_list != NULL)
+	{
+		sal_memset(data, 0, 8);
+		addr = (enable_pd_probe_list->base_addr << 16) + (enable_pd_probe_list->offset_addr << 4);
+		soc_reg_read(chip_id, bar, addr, data);
+		set_field_to_data(data, temp_data, 2, 0);
+		soc_reg_write(chip_id, bar, addr, data);
+		/*
+		debug(INFO, "<base_addr = %d, offset = %d, data =0x", enable_pd_probe_list->base_addr, enable_pd_probe_list->offset_addr);
+		int32_t i = 7;
+		for(; i>=0; i--)
+		{
+			debug(INFO, "%02x", *(data + i));
+		}
+		debug(INFO, ">\n");
+		*/
+		enable_pd_probe_list = enable_pd_probe_list->next;
+	}
+	
+	sal_free(temp_data);
+	sal_free(data);
+	return 0;
+}
+
+static int32_t pd_probe_get(struct pd *pd_probe)
+{
+    uint8_t *data,  *fdata, *fdata_it, *temp_data;
+	uint32_t  bar,  addr;
+    uint32_t start_bit, len, byte_len;
+    int32_t i, j;
+
+    struct pd_field_info *pd_field_head;
+
+	data = (uint8_t *)sal_malloc(8, "SHELL");
+	if (data == NULL) 
+	{
+		debug(ERROR, "Could not malloc memory for pio write\n");
+		return -1;
+	}
+	fdata = (uint8_t *)sal_malloc(8*pd_probe->register_num, "SHELL");
+	if(fdata == NULL)
+	{
+		debug(ERROR, "Could not malloc memory for fdata\n");
+		sal_free(data);
+		return -1;
+	}	
+	sal_memset(data, 0, 8);
+	sal_memset(fdata, 0, 8*pd_probe->register_num);
+	bar = 4;
+
+    addr = (pd_probe->base_addr << 16) + (pd_probe->start_offset_addr << 4);
+	fdata_it = fdata;
+	i = 0;
+	for( ; i < pd_probe->register_num; i++)
+	{
+		sal_memset(data, 0, 8);
+		soc_reg_read(chip_id, bar, addr, data);
+		sal_memcpy(fdata_it, data, 8);
+		addr += (1 << 4);
+		fdata_it += 8;
+	}
+	/*
+	struct pd_field_info *pd_field_list = pd_probe->pd_field_list;
+	uint8_t count = 1;
+	while(pd_field_list != NULL)
+	{
+		uint32_t start_bit = pd_field_list->start_bit;
+		uint32_t len = pd_field_list->end_bit - start_bit + 1;
+		uint32_t byte_len = ALIGN_8(len)/8;
+		uint8_t *temp_data = malloc(byte_len);
+		memset(temp_data, count, byte_len);
+		int32_t k = byte_len - 1;
+		printf("0x");
+		for(; k>=0; k--)
+		{
+			printf("%x", *(temp_data+k));
+		}
+		printf("\n");
+		set_field_to_data(fdata, temp_data, len, start_bit);
+		free(temp_data);
+		pd_field_list = pd_field_list->next;
+		count++;
+	}
+	*/
+	pd_field_head = pd_probe->pd_field_list;
+	while(pd_field_head != NULL)
+	{
+		start_bit = pd_field_head->start_bit;
+		len = pd_field_head->end_bit - start_bit + 1;
+		if( (sal_strcmp(pd_probe->line_name, "tt_icap_fifo_dout_0") == 0) || (sal_strcmp(pd_probe->line_name, "tt_icap_fifo_dout_1") == 0))
+		{
+			start_bit += 4;
+		}
+		byte_len = ALIGN_8(len)/8;
+		temp_data = sal_malloc(byte_len, "SHELL");
+		sal_memset(temp_data, 0, byte_len);
+		get_field_from_data(fdata, temp_data, len, start_bit);
+		debug(INFO, "<%-20s: 0x", pd_field_head->field_name);
+		j = byte_len-1;
+		for( ; j>=0; j--)
+		{
+			debug(INFO, "%02x", *(temp_data+j));
+		}
+		debug(INFO, ">\n");
+		sal_free(temp_data);
+		pd_field_head = pd_field_head->next;
+	}
+	
+	sal_free(fdata);
+	sal_free(data);
+	return 0;
+}
+
+static int32_t dump_all_pd_probe(struct pd *pd_list)
+{
+    uint8_t *data, *fdata, *fdata_it, *temp_data;
+	uint32_t  bar, addr;
+    uint32_t start_bit, len, byte_len;
+    int32_t fd;
+    int32_t i, j;
+    
+    struct pd *pd_probe;
+    struct pd_field_info *pd_field_head;
+
+	bar = 4;
+
+	fd = open("pd.log", O_WRONLY|O_CREAT|O_TRUNC);
+	if(fd == -1)
+	{
+		debug(ERROR, "Could not open pd.log file\n");
+		return -1;
+	}
+	
+	pd_probe = pd_list;
+	while(pd_probe != NULL)
+	{
+	
+		data = (uint8_t *)sal_malloc(8, "SHELL");
+		if (data == NULL) 
+		{
+			debug(ERROR, "Could not malloc memory for pio write\n");
+			return -1;
+		}
+		fdata = (uint8_t *)sal_malloc(8*pd_probe->register_num, "SHELL");
+		if(fdata == NULL)
+		{
+			debug(ERROR, "Could not malloc memory for fdata\n");
+			sal_free(data);
+			return -1;
+		}	
+		sal_memset(data, 0, 8);
+		sal_memset(fdata, 0, 8*pd_probe->register_num);
+		addr = (pd_probe->base_addr << 16) + (pd_probe->start_offset_addr << 4);
+		fdata_it = fdata;
+		i = 0;
+		for( ; i < pd_probe->register_num; i++)
+		{
+			soc_reg_read(chip_id, bar, addr, data);
+			sal_memcpy(fdata_it, data, 8);
+			addr += (1 << 4);
+			fdata_it += 8;
+		}
+		
+		/*
+		struct pd_field_info *pd_field_list = pd_probe->pd_field_list;
+		uint8_t count = 1;
+		while(pd_field_list != NULL)
+		{
+			uint32_t start_bit = pd_field_list->start_bit;
+			uint32_t len = pd_field_list->end_bit - start_bit + 1;
+			uint32_t byte_len = ALIGN_8(len)/8;
+			uint8_t *temp_data = malloc(byte_len);
+			memset(temp_data, count, byte_len);
+			set_field_to_data(fdata, temp_data, len, start_bit);
+			free(temp_data);
+			pd_field_list = pd_field_list->next;
+			count++;
+		}
+		*/
+		pd_field_head = pd_probe->pd_field_list;
+		write_log(fd, "[%s]\n", pd_probe->pd_name);
+		while(pd_field_head != NULL)
+		{
+			start_bit = pd_field_head->start_bit;
+			len = pd_field_head->end_bit - start_bit + 1;
+			byte_len = ALIGN_8(len)/8;
+			temp_data = sal_malloc(byte_len, "SHELL");
+			sal_memset(temp_data, 0, byte_len);
+			get_field_from_data(fdata, temp_data, len, start_bit);
+			write_log(fd, "    <%-30s: 0x", pd_field_head->field_name);
+			j = byte_len-1;
+			for( ; j>=0; j--)
+			{
+				write_log(fd, "%02x", *(temp_data+j));
+			}
+			write_log(fd, ">\n");
+			sal_free(temp_data);
+			pd_field_head = pd_field_head->next;
+		}
+		write_log(fd, "\n\n");
+		
+		sal_free(fdata);
+		sal_free(data);
+		pd_probe = pd_probe->next;
+	}
+
+	close(fd);
+	return 0;
+}
+
+int32_t set_pd_probe_enable(int32_t module_id, int32_t argc, char_t *args[])
+{
+	set_all_pd_probe_enable();
+	return 0;
+}
+
+int32_t set_pd_probe_disable(int32_t module_id, int32_t argc, char_t *args[])
+{
+	set_all_pd_probe_disable();
+	return 0;
+}
+
+int32_t dump_pd_probe(int32_t module_id, int32_t argc, char_t *args[])
+{
+	init_pd_list();
+	dump_all_pd_probe(pd_list);
+	return 0;
+}
+

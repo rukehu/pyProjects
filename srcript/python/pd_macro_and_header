@@ -1,0 +1,106 @@
+#define SLICE_TOP_ADDR_PREFIX 							1
+#define PA_ADDR_PREFIX        							2
+#define PA_MPLS_ADDR_PREFIX   							3
+#define TT_ADDR_PREFIX        							4
+#define VCAP_ADDR_PREFIX      							5
+#define P0_ING_VLAN_ADDR_PREFIX  						6
+#define P1_ING_VLAN_ADDR_PREFIX  						7
+#define RTAG_CRC0_ADDR_PREFIX  							8
+#define RTAG_CRC1_ADDR_PREFIX  							9
+#define P0_L2_ADDR_PREFIX     							10
+#define P1_L2_ADDR_PREFIX     							11
+#define P0_L3_ADDR_PREFIX     							12
+#define P1_L3_ADDR_PREFIX     							13
+#define MAC7_ADDR_PREFIX      							14
+#define MAC_CLOCK_GEN7_ADDR_PREFIX  				15
+#define MAC6_ADDR_PREFIX      							16
+#define MAC_CLOCK_GEN6_ADDR_PREFIX  				17
+#define MAC5_ADDR_PREFIX      							18
+#define MAC_CLOCK_GEN5_ADDR_PREFIX  				19
+#define MAC4_ADDR_PREFIX      							20
+#define MAC_CLOCK_GEN4_ADDR_PREFIX  				21
+#define CB_ADDR_PREFIX        							22
+#define DICE1_ADDR_PREFIX     							23
+#define P0_HIRAR_ADDR_PREFIX  							24
+#define P0_LLP_PCS_ADDR_PREFIX  						25
+#define P1_HIRAR_ADDR_PREFIX  							26
+#define P1_LLP_PCS_ADDR_PREFIX  						27
+#define P0_EGR_L3_ADDR_PREFIX  							34
+#define P1_EGR_L3_ADDR_PREFIX  							28
+#define P0_EGR_VLAN_ASSIGNMENT_ADDR_PREFIX  29
+#define P1_EGR_VLAN_ASSIGNMENT_ADDR_PREFIX  30
+#define MIRROR_ENCAP_ADDR_PREFIX  					31
+#define PEA_ADDR_PREFIX       							32
+#define PAC_ADDR_PREFIX       							33
+#define P0_EGR_VLAN_FILTER_ADDR_PREFIX  		35
+#define P1_EGR_VLAN_FILTER_ADDR_PREFIX  		36
+#define PEB_ADDR_PREFIX       							37
+#define DICE0_ADDR_PREFIX     							38
+#define MAC0_ADDR_PREFIX      							39
+#define MAC_CLOCK_GEN0_ADDR_PREFIX  				40
+#define MAC1_ADDR_PREFIX      							41
+#define MAC_CLOCK_GEN1_ADDR_PREFIX  				42
+#define MAC2_ADDR_PREFIX      							43
+#define MAC_CLOCK_GEN2_ADDR_PREFIX  				44
+#define MAC3_ADDR_PREFIX      							45
+#define MAC_CLOCK_GEN3_ADDR_PREFIX  				46
+#define QOS_ADDR_PREFIX          						47
+#define CIU_ADDR_PREFIX          						48
+#define BFD_ADDR_PREFIX          						49
+#define I1588_ADDR_PREFIX        						50
+#define EI_ADDR_PREFIX           						51
+#define P0_IM_ADDR_PREFIX        						52
+#define P1_IM_ADDR_PREFIX        						53
+#define P0_DA_ADDR_PREFIX        						54
+#define P1_DA_ADDR_PREFIX        						55
+#define LED_ADDR_PREFIX          						56
+#define ICAP_TOP_CSR_ADDR_PREFIX            115
+#define IFC_CSR_ADDR_PREFIX									117
+#define EFC_CSR_ADDR_PREFIX									217
+#define ECAP_TCAM0_ADDR_PREFIX							218
+
+#define ALIGN_8(x) (((x)+7)&~7)
+#define PIPELINE_NUM 11
+extern struct cli_tree *ctree;
+extern void get_field_from_data(uint8_t *data, uint8_t *fdata, uint32_t len, uint32_t bp);
+extern void set_field_to_data(uint8_t *data, uint8_t*fdata, uint32_t len, uint32_t bp);
+extern void setPrompt(char_t *Prompt);
+
+typedef struct enable_pd_probe
+{
+	uint32_t base_addr;
+	uint32_t offset_addr;
+	struct enable_pd_probe *next;
+}enable_pd_probe;
+
+static struct enable_pd_probe enable_pd_probe_evlan_filter2peb_r = {PEB_ADDR_PREFIX, 0x100, NULL};
+static struct enable_pd_probe enable_pd_probe_icap_top_csr_addr_prefix_r  = {ICAP_TOP_CSR_ADDR_PREFIX, 0x40, &enable_pd_probe_evlan_filter2peb_r};
+static struct enable_pd_probe enable_pd_probe_p0_l2_addr_prefix_r  = {P0_L2_ADDR_PREFIX, 0x0f, &enable_pd_probe_icap_top_csr_addr_prefix_r};
+static struct enable_pd_probe enable_pd_probe_p1_l2_addr_prefix_r  = {P1_L2_ADDR_PREFIX, 0x0f, &enable_pd_probe_p0_l2_addr_prefix_r};
+static struct enable_pd_probe enable_pd_probe_im2da_r_0          = {P0_DA_ADDR_PREFIX, 0x300, &enable_pd_probe_p1_l2_addr_prefix_r};
+static struct enable_pd_probe enable_pd_probe_im2da_r_1          = {P1_DA_ADDR_PREFIX, 0x300, &enable_pd_probe_im2da_r_0};
+static struct enable_pd_probe enable_pd_probe_ra_l2_r            = {PA_ADDR_PREFIX, 0x00f, &enable_pd_probe_im2da_r_1};
+static struct enable_pd_probe enable_pd_probe_l2_l3_pd_0         = {P0_L3_ADDR_PREFIX, 0x00f, &enable_pd_probe_ra_l2_r};
+static struct enable_pd_probe enable_pd_probe_l2_l3_pd_1         = {P1_L3_ADDR_PREFIX, 0x00f, &enable_pd_probe_l2_l3_pd_0};
+static struct enable_pd_probe enable_pd_probe_pea_to_pac_pd_0    = {PAC_ADDR_PREFIX, 0x041, &enable_pd_probe_l2_l3_pd_1};
+static struct enable_pd_probe enable_pd_probe_slice_to_pa_f_0    = {PA_ADDR_PREFIX, 0x007, &enable_pd_probe_pea_to_pac_pd_0};
+static struct enable_pd_probe enable_pd_probe_mirror_to_pea_pd_0 = {PEA_ADDR_PREFIX, 0x100, &enable_pd_probe_slice_to_pa_f_0};
+static struct enable_pd_probe enable_pd_probe_pa_mpls2tt_pd      = {PA_MPLS_ADDR_PREFIX, 0x006, &enable_pd_probe_mirror_to_pea_pd_0};
+static struct enable_pd_probe enable_pd_probe_pa2tt              = {TT_ADDR_PREFIX, 0x056, &enable_pd_probe_pa_mpls2tt_pd};
+static struct enable_pd_probe enable_pd_probe_tt_vlan_pd_0       = {P0_ING_VLAN_ADDR_PREFIX, 0x011, &enable_pd_probe_pa2tt};
+static struct enable_pd_probe enable_pd_probe_tt_vlan_pd_1       = {P1_ING_VLAN_ADDR_PREFIX, 0x011, &enable_pd_probe_tt_vlan_pd_0};
+static struct enable_pd_probe enable_pd_probe_el32evlan_r_0      = {P0_EGR_VLAN_ASSIGNMENT_ADDR_PREFIX, 0x100, &enable_pd_probe_tt_vlan_pd_1};
+static struct enable_pd_probe enable_pd_probe_el32evlan_r_1      = {P1_EGR_VLAN_ASSIGNMENT_ADDR_PREFIX, 0x100, &enable_pd_probe_el32evlan_r_0};
+static struct enable_pd_probe enable_pd_probe_post_qd_r_0        = {P0_EGR_L3_ADDR_PREFIX, 0x085, &enable_pd_probe_el32evlan_r_1};
+static struct enable_pd_probe enable_pd_probe_post_qd_r_1        = {P1_EGR_L3_ADDR_PREFIX, 0x085, &enable_pd_probe_post_qd_r_0};
+static struct enable_pd_probe enable_pd_probe_l3_icap_pd_0       = {ICAP_TOP_CSR_ADDR_PREFIX, 0x40, &enable_pd_probe_post_qd_r_1};
+static struct enable_pd_probe enable_pd_probe_l3_icap_pd_1       = {ICAP_TOP_CSR_ADDR_PREFIX, 0x41, &enable_pd_probe_l3_icap_pd_0};
+static struct enable_pd_probe enable_pd_probe_l3_iif_ifc_0       = {IFC_CSR_ADDR_PREFIX, 0x40, &enable_pd_probe_l3_icap_pd_1};
+static struct enable_pd_probe enable_pd_probe_l3_iif_ifc_1       = {IFC_CSR_ADDR_PREFIX, 0x41, &enable_pd_probe_l3_iif_ifc_0};
+static struct enable_pd_probe enable_pd_probe_l3_port_efc_0      = {EFC_CSR_ADDR_PREFIX, 0x40, &enable_pd_probe_l3_iif_ifc_1};
+static struct enable_pd_probe enable_pd_probe_l3_port_efc_1      = {EFC_CSR_ADDR_PREFIX, 0x41, &enable_pd_probe_l3_port_efc_0};
+static struct enable_pd_probe enable_pd_probe_pab_ecap_pd_0      = {ECAP_TCAM0_ADDR_PREFIX, 0x40, &enable_pd_probe_l3_port_efc_1};
+static struct enable_pd_probe enable_pd_probe_pab_ecap_pd_1      = {ECAP_TCAM0_ADDR_PREFIX, 0x41, &enable_pd_probe_pab_ecap_pd_0};
+
+static struct enable_pd_probe *enable_pd_probe_head = &enable_pd_probe_pab_ecap_pd_1;
+
