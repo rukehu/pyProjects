@@ -1,9 +1,75 @@
-40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1091] ERROR int() can't convert non-string with explicit base
-40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1092] ERROR error: physical_table table.nrows = 140, rownum = 2
+40 Wed, 24 Apr 2019 15:23:46 csr_parse.py[line:995] ERROR invalid literal for int() with base 16: '0x20000-0x2ffff'
+40 Wed, 24 Apr 2019 15:23:46 csr_parse.py[line:996] ERROR error: PCIEPHY table.nrows = 49, rownum = 47
 
-40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1091] ERROR 'float' object has no attribute 'find'
-40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1092] ERROR error: Sheet1 table.nrows = 32, rownum = 1
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:995] ERROR local variable 'csrMacro' referenced before assignment
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:996] ERROR error: proxy_node table.nrows = 284, rownum = 9
 
-40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1001] ERROR int() can't convert non-string with explicit base
-40 Mon, 22 Apr 2019 18:28:37 csr_parse.py[line:1002] ERROR error: EP_COUNT table.nrows = 55, rownum = 5
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:995] ERROR local variable 'csrMacro' referenced before assignment
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:996] ERROR error: duplct_filter table.nrows = 189, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:995] ERROR local variable 'csrMacro' referenced before assignment
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:996] ERROR error: ep_egress_flow table.nrows = 73, rownum = 8
+
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:995] ERROR local variable 'csrMacro' referenced before assignment
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:996] ERROR error: ep_flow table.nrows = 35, rownum = 8
+
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:995] ERROR local variable 'csrMacro' referenced before assignment
+40 Wed, 24 Apr 2019 15:23:48 csr_parse.py[line:996] ERROR error: pt_hsr_port table.nrows = 27, rownum = 8
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l2_table table.nrows = 162, rownum = 144
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR invalid literal for int() with base 16: '0x000+n*0x046'
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: MAC_COUNTER_TABLE  table.nrows = 199, rownum = 3
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: my_station_tcam table.nrows = 9, rownum = 8
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_0 table.nrows = 18, rownum = 11
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_1 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_2 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_3 table.nrows = 16, rownum = 9
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_4 table.nrows = 19, rownum = 12
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_5 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_6 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_7 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_8 table.nrows = 19, rownum = 12
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_9 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_10 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_11 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_12 table.nrows = 19, rownum = 12
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_13 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_14 table.nrows = 17, rownum = 10
+
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:995] ERROR string index out of range
+40 Wed, 24 Apr 2019 15:23:49 csr_parse.py[line:996] ERROR error: l3_lpm_tcam_15 table.nrows = 17, rownum = 10
 

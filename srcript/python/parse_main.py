@@ -68,7 +68,7 @@ def reconstruct_hash_tcam_table(sameModeObjsDict):
 
         for ii in range(len(hash_tcam_data_list)):  # mixed the data and key table.
             if mode == hash_tcam_data_list[ii]:
-                # print "mixed %s " % mode
+                print "mixed %s " % mode
                 key_mode_name = hash_tcam_key_list[ii]
                 sameModeObjsDict[mode][1][0] += copy.deepcopy(sameModeObjsDict[key_mode_name][1][0])
                 sameModeObjsDict[mode][1][1] += copy.deepcopy(sameModeObjsDict[key_mode_name][1][1])
@@ -116,8 +116,7 @@ def reconstruct_hash_tcam_table(sameModeObjsDict):
                         # regList[reg]._regName = regList[reg]._regName + "_DATA"
                         regList[reg]._regName = mode + "_" + regList[reg]._regName
                         regList[reg]._old_regName = regList[reg]._regName
-                        regList[
-                            reg]._old_sheetName = mode  # _old_sheetName equal mode originally
+                        regList[reg]._old_sheetName = mode  # _old_sheetName equal mode originally
                         # print "data--> %s" % regList[reg]._regName
                     if regList[reg]._sheetName in hash_tcam_key_list:
                         # regList[reg]._regName = regList[reg]._regName + "_KEY"
@@ -238,7 +237,7 @@ def delete_same_register(sameModeObjsDict):
         mem_list = []
         count = 0
 
-    print "new count %d \n" % new_total_count
+    # print "new count %d \n" % new_total_count
 
     return sameModeObjsDict
 
@@ -300,7 +299,7 @@ def parse_all_reg(allObjList):
     for obj in allObjList:
 
         mode = obj._old_sheetName  # use old_sheetName, not sheet name which is expanded
-
+        #print "mode = %s" % mode
         found = 0
         for ch_name in checked:
             if mode == ch_name:  # check if the mode have already be iterated
@@ -338,6 +337,7 @@ def parse_all_reg(allObjList):
     for mode in sameModeObjs:
         if mode == "table_pool":
             continue
+        print mode
         total += (sameModeObjs[mode][1][0] + sameModeObjs[mode][2][0])
         for _reg in sameModeObjs[mode][1][1]:
             # print "\n%s  %s reg %-10s %-20s %-10s  %-5s\n" % (_reg._excelName, mode, _reg._csrName, _reg._regName, _reg._regBaseAddr, _reg._regOffsetAddr)
@@ -369,19 +369,18 @@ def get_obj_list(dir_name):
 
     for item in list:
         item = dir_name + item
-
+        # print "item %s" % item
         if os.path.isfile(item) and (item[-5:] == '.xlsx' or item[-5:] == '.xlsm'):
             if item.find("$") != -1 or item.find("csr_example") != -1:
-                print item
+
                 continue
 
-            # print item
             csrConfig = CCsrConfig(item)
-            print 'list name'
-            print item
+            print 'list name:', item
             csrConfig.OpenExcel()
             # csrConfig.enable_for_sdk()  # this is to open the switch,  then the different MACRO will not be enlarged to different mode.
             tmp = csrConfig.ReadCSRCfg()
+            #print "tmp%d" % len(tmp)
             csrConfig.checkMacro()  # added to check the macro
             objList += tmp
             # print "File %s has %d regs\n " % (item, len(tmp))
@@ -507,8 +506,7 @@ def for_soc_sdk(soc):
 
     memSameModeObjsDict = reconstruct_hash_tcam_table(
         memSameModeObjsDict)  # delete the key table, and add it to data table.
-
-    memSameModeObjsDict = reconstruct_table_for_table_pool(memSameModeObjsDict)  # for table pool.
+    #memSameModeObjsDict = reconstruct_table_for_table_pool(memSameModeObjsDict)  # for table pool.
 
     # mixed the tables from the physical_table.xlsx
     memSameModeObjsDict["physical_table"] = ["physical_table", [0, []],
@@ -536,13 +534,13 @@ def for_soc_sdk(soc):
      unique_name_objs_in_mode) = Gen.reconstruct_the_reg_table_and_create_unique_name_for_same_mode(
         totalSameModeObjsDict, soc)
 
-    Gen.GenerateRegMemXMLFile(totalSameModeObjsDict)  # commands' define
+    Gen.GenerateRegMemXMLFile(totalSameModeObjsDict)     # commands' define
     Gen.GenerateRegMemInterfaces(totalSameModeObjsDict)  # reg_mem_interface.c
 
     Gen.GenerateCli_Mode_Mode_H(totalSameModeObjsDict, memSameModeObjsDict, soc)  # cli_mode.h
 
     Gen.GenerateAllRegTableStruct(totalSameModeObjsDict, soc)  ###### generate the table struct define file
-    Gen.GenerateAllAPI(totalSameModeObjsDict, soc)  ###### generate the APIs
+    Gen.GenerateAllAPI(totalSameModeObjsDict, soc)             ###### generate the APIs
 
     Gen.GenerateAllRegAndTableSymbol(totalSameModeObjsDict, soc)  # allsymbol.h
 
@@ -581,6 +579,7 @@ def start():
     Gen = Generator()
 
     init_table_fields()
+    #print "2"
     for_soc_sdk("sf9564")
 
     print '####################################################'

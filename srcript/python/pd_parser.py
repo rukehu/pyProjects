@@ -1,47 +1,28 @@
 #-*- coding: utf-8 -*-
-#import sys
-#reload(sys)
-#sys.setdefaultencoding('utf-8')
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import os
 import xlrd
 register_to_pd = []
 pd_field_dict = {}
-pd_line_name = ["slice_to_pa_f_0",      "slice_to_pa_f_1",      "pa2tt_0",              "pa2tt_1",              "pa_mpls2tt_pd_0",
-                "pa_mpls2tt_pd_1",      "tt2pa_mpls_data_0",    "tt2pa_mpls_data_1",    "tt2vcap_0",            "tt2vcap_1",
-                "tt_vlan_pd_0",         "tt_vlan_pd_1",         "tt_l2_r_0",            "tt_l2_r_1",            "tt_l3_fifo_0",
-                "tt_l3_fifo_1",         "tt_icap_fifo_dout_0",  "tt_icap_fifo_dout_1",  "TT2PD_EDITOR_f_0",     "TT2PD_EDITOR_f_1",
-                "tt_mpls_ifc_0",        "tt_mpls_ifc_1",        "tt_port_ifc_0",        "tt_port_ifc_1",        "TT_IMDA_SOP_0",
-                "TT_IMDA_SOP_1",        "vcap_vlan_pd_0",       "vcap_vlan_pd_1",       "vcap_vfp_ifc_0",       "vcap_vfp_ifc_1",
-                "vlan_ifc_0",           "vlan_ifc_1",           "vlan_vxlat_ifc_0",     "vlan_vxlat_ifc_1",     "rtag_l3_fifo_0",
-                "rtag_l3_fifo_1",       "ra_l2_r_0",            "ra_l2_r_1",            "l2_l3_pd_0",           "l2_l3_pd_1",
-                "l2_svp_ifc_0",         "l2_svp_ifc_1",         "l2_vfi_ifc_0",         "l2_vfi_ifc_1",         "l3_icap_pd_0",
-                "l3_icap_pd_1",         "l3_entry_ifc_0",       "l3_entry_ifc_1",       "l3_def_ifc_0",         "l3_def_ifc_1",
-                "l3_iif_ifc_0",         "l3_iif_ifc_1",         "l3_vrf_ifc_0",         "l3_vrf_ifc_1",         "IM2DA_r_0",
-                "IM2DA_r_1",            "Post_QD_r_0",          "Post_QD_r_1",          "PRE_PD_r_0",           "PRE_PD_r_1",
-                "EL32EVLAN_r_0",        "EL32EVLAN_r_1",        "el3_to_pea_fifo_0",    "el3_to_pea_fifo_1",    "el3_port_efc_0",
-                "el3_port_efc_1",       "el3_nh_efc_0",         "el3_nh_efc_1",         "el3_dvp_efc_0",        "el3_dvp_efc_1",
-                "evlan_vxlate_efc_0",   "evlan_vxlate_efc_1",   "mirror_to_pea_pd_0",   "mirror_to_pea_pd_1",   "pab_ecap_pd_0",
-                "pab_ecap_pd_1",        "pea_to_pac_pd_0",      "pea_to_pac_pd_1",      "PAC2PEB_f_0",          "PAC2PEB_f_1",
-                "EVLAN_FILTER2PEB_r_0", "EVLAN_FILTER2PEB_r_1"]
+pd_line_name = ["pab_ecap_pd_0",        "EL32EVLAN_r_0", 		"Post_QD_r_0", 			"PRE_PD_r_0", 			"EVLAN_FILTER2PEB_r_0", 
+                "PAC2PEB_f_0",			"PEA2PEB_f_0", 			"HIRAR_PRE_PD_0", 		"HIRAR_PRE_QD_0", 		"EGR_HIRAR_PD", 
+                "l3_icap_pd_0",			"tt_icap_fifo_dout_0", 	"l3_iif_ifc_0", 		"l2_svp_ifc_0", 		"tt_mpls_ifc_0", 		
+				"tt_port_ifc_0", 		"vlan_ifc_0", 			"l2_vfi_ifc_0", 		"l3_vrf_ifc_0", 		"vcap_vfp_ifc_0",
+				"l3_entry_ifc_0", 		"l3_def_ifc_0", 		"IM2DA_r_0", 			"TT2PD_EDITOR_f_0", 	"TT_IMDA_SOP_0",
+				"DA_PRE_PD_0", 			"DA_PRE_QD", 			"ra_l2_r_0", 			"tt_l2_r_0", 			"l2_l3_pd_0",
+				"tt_l3_fifo_0", 		"rtag_l3_fifo_0", 		"slice_to_pa_f_0", 		"pea_to_pac_pd_0", 		"pea_to_pac_pd_1",
+				"mirror_to_pea_pd_0", 	"el3_to_pea_fifo_0", 	"pa2tt_0",				"tt2vcap_0", 			"tt_vlan_pd_0", 		"vcap_vlan_pd_0"]
 
-pd_desciption =	["Input to PA",         "Input to PA",          "PA to TT",             "PA to TT",             "PA MPLS to TT",
-                 "PA MPLS to TT",       "TT to PA MPLS",        "TT to PA MPLS",        "TT to VCAP",           "TT to VCAP",
-                 "TT to VLAN",          "TT to VLAN",           "TT to L2",             "TT to L2",             "TT to L3",
-                 "TT to L3",            "TT to ICAP",           "TT to ICAP",           "TT to PD_EDITOR",      "TT to PD_EDITOR",
-                 "TT MPLS to IFC",      "TT MPLS to IFC",       "TT PORT to IFC",       "TT PORT to IFC",       "TT to IMDA",
-                 "TT to IMDA",          "VCAP to VLAN",         "VCAP to VLAN",         "VCAP VFP to IFC",      "VCAP VFP to IFC",
-                 "VLAN to IFC",         "VLAN to IFC",          "VLAN VXLAT to IFC",    "VLAN VXLAT to IFC",    "RTAG to L3",
-                 "RTAG to L3",          "RA to L2",             "RA to L2",             "L2 to L3",             "L2 to L3",
-                 "L2 SVP to IFC",       "L2 SVP to IFC",        "l2 VFI to IFC",        "l2 VFI to IFC",        "L3 to ICAP",
-                 "L3 to ICAP",          "L3 ENTRY to IFC",      "L3 ENTRY to IFC",      "L3 DEF to IFC",        "L3 DEF to IFC",
-                 "L3 IIF to IFC",       "L3 IIF to IFC",        "L3 VRF to IFC",        "L3 VRF to IFC",        "IM to DA",
-                 "IM to DA",            "Input to EL3",         "Input to EL3",         "Input to EL3",         "Input to EL3",
-                 "EL3 to EVLAN",        "EL3 to EVLAN",         "EL3 to PEA",           "EL3 to PEA",           "EL3 PORT to EFC",
-                 "EL3 PORT to EFC",     "EL3 Next Hop to EFC",  "EL3 Next Hop to EFC",  "EL3 DVP to EFC",       "EL3 DVP to EFC",
-                 "EVLAN VXLAT to EFC",  "EVLAN VXLAT to EFC",   "MIRROR to PEA",        "MIRROR to PEA",        "PAB to ECAP",
-                 "PAB to ECAP",         "PEA to PAC",           "PEA to PAC",           "PAC to PEB",           "PAC to PEB",
-                 "EVLAN Filter to PEB", "EVLAN Filter to PEB"]
-
+pd_desciption = ["PAB to ECAP",         "EL3 to EVLAN",		    "Input to EL3",			"Input to EL3",			"EVLAN Filter to PEB",
+                 "PAC to PEB",          "PEA to PEB",			"HIRAR pre",			"HIRAR pre",			"RIGESTER HIRAR",
+                 "L3 to ICAP",          "TT to ICAP",			"L3 IIF to IFC",		"L2 SVP to IFC",		"TT MPLS to IFC",		
+				 "TT PORT to IFC",		"VLAN to IFC",			"l2 VFI to IFC",		"L3 VRF to IFC",		"VCAP VFP to IFC",
+				 "L3 ENTRY to IFC",		"L3 DEF to IFC",		"IM to DA",				"TT to PD_EDITOR",		"TT to IMDA",
+				 "DA DREGISTER",		"DA REGISTER",			"RA to L2",				"TT to L2",				"L2 to L3",
+				 "TT to L3",			"RTAG to L3",			"Input to PA",			"PEA to PAC",			"PEA to PAC",
+				 "MIRROR to PEA",		"EL3 to PEA",			"PA to TT",             "TT to VCAP",			"TT to VLAN",			"VCAP to VLAN"]
 
 def copy_file_to_file(src_file_name, dest_file):
     with open(src_file_name, "r") as file:
@@ -126,12 +107,15 @@ class Excel(object):
 
     def get_pd_field(self, register):
         current_dir = os.getcwd()
-        pipeline_dir = current_dir + "\\" + "PIPELINE"
+        pipeline_dir = current_dir + "/" + "PIPELINE"
         pipeline_file_list = os.listdir(pipeline_dir)
         for file_name in pipeline_file_list:
             pipeline_file_path = os.path.join(pipeline_dir, file_name)
             pipeline_fd = xlrd.open_workbook(pipeline_file_path)
             for sheet_name in pipeline_fd.sheet_names():
+                #if sheet_name == "version":
+                    #continue
+                #print "PIPELINE sheet_name: ", sheet_name
                 if sheet_name == register.pd_name:
                     table = pipeline_fd.sheet_by_name(sheet_name)
                     row = 1
@@ -159,8 +143,8 @@ class Excel(object):
                         else:
                             pd_field_dict[pd_field.field_name] = 1
                         row += 1
-                    #print register.pd_field_num
-
+		    print "pd_field_num: ", register.pd_field_num
+		    print "\n"
     def get_pd_name(self, table, register):
         row = 0
         col = 8
@@ -236,20 +220,25 @@ class Hfile(object):
         c_file.write("}pd;\n\n")
         c_file.write("struct pd *pd_list;\n\n")
         for i in range(len(register_to_pd)):
-            c_file.write("//%s\n" % register_to_pd[i].line_name)
-            j = register_to_pd[i].pd_field_num - 1
+            c_file.write("//%s\n" % register_to_pd[i].line_name)  #pd sheet name
+            j = register_to_pd[i].pd_field_num - 1  #pd sheet中 寄存器名称的个数
             while j >= 0:
                 pd_field_name = register_to_pd[i].pd_field_list[j].field_name
                 if pd_field_dict[pd_field_name] > 1:
-                    pd_field_name +="_%d" % pd_field_dict[pd_field_name]
+                    pd_field_name +="_%d" % pd_field_dict[pd_field_name]  #PIPEINFO sheet中 字段名
                     pd_field_dict[register_to_pd[i].pd_field_list[j].field_name] -= 100
+                #print pd_field_name
+                #print register_to_pd[i].pd_field_list[j].start_bit
+                #print register_to_pd[i].pd_field_list[j].end_bit
+                #print register_to_pd[i].pd_field_list[j].field_name
                 if j == register_to_pd[i].pd_field_num - 1:
                     c_file.write('static struct pd_field_info %s = {%d, %d, "%s", NULL};\n' % (pd_field_name, int(register_to_pd[i].pd_field_list[j].start_bit), int(register_to_pd[i].pd_field_list[j].end_bit), register_to_pd[i].pd_field_list[j].field_name))
                     register_to_pd[i].pd_field_list[j].field_name = pd_field_name
                 else:
-                    c_file.write('static struct pd_field_info %s = {%d, %d , "%s", &%s};\n' % (pd_field_name, int(register_to_pd[i].pd_field_list[j].start_bit), int(register_to_pd[i].pd_field_list[j].end_bit), register_to_pd[i].pd_field_list[j].field_name,  register_to_pd[i].pd_field_list[j+1].field_name))                
+                    c_file.write('static struct pd_field_info %s = {%d, %d , "%s", &%s};\n' % (pd_field_name, int(register_to_pd[i].pd_field_list[j].start_bit), int(register_to_pd[i].pd_field_list[j].end_bit), register_to_pd[i].pd_field_list[j].field_name,  register_to_pd[i].pd_field_list[j+1].field_name))
                     register_to_pd[i].pd_field_list[j].field_name = pd_field_name
                 j -= 1
+            print "pd_field_num: ", register_to_pd[i].pd_field_num
             if 0 == register_to_pd[i].pd_field_num:
                 print "The pd field of %s has not found" % register_to_pd[i].line_name
             else:
@@ -365,11 +354,10 @@ class XMLfile(object):
 
 def pd_init():
     current_dir = os.getcwd()
-    pd_dir = current_dir + "\\" + "PD"
+    pd_dir = current_dir + "/" + "PD"
     excel_list = os.listdir(pd_dir)
     for file_name in excel_list:
         file_path = os.path.join(pd_dir, file_name)
-        print "\n%s" % file_name
         excel = Excel(file_path)
         excel.open_excel()
         excel.get_info()

@@ -12,9 +12,11 @@ import getopt
 from regLog import *
 from Register import CRegister
 from RegField import CField
+import time
+import copy
 #from table import CTable
 #from regStruct import *
-#from assist import CAssist
+from assist import CAssist
 #import copy
 
 macroDict          = {} # store the macro name and the corresponding base address
@@ -82,7 +84,7 @@ class CCsrConfig(object):
                 continue
             
             table = self._excelfd.sheet_by_name(sheetName)
-            print sheetName
+            #print sheetName
             tableName = sheetName.replace(" ", "")
             tableName = tableName.upper()
             
@@ -282,6 +284,10 @@ class CCsrConfig(object):
                 print "Error %s already have." % tableName
             
             tableFieldDict[tableName] = [tableName, tableType, tableCount, keyTypeList, self._excelName]
+            logger.debug("table_name = %s"%(tableName))
+
+
+
 
 
 
@@ -360,8 +366,10 @@ class CCsrConfig(object):
 
             if tableFieldDict.has_key(tableName[0:]) == True:                
                 tableNameList.append(tableFieldDict[tableName[0:]])
+                #logger.debug("TableName_ok = %s" % (tableName[0:]))
             else :
-                print "Can not found the fields for %s" % tableName[0:]                
+                #logger.debug("TableName_ERROR = %s" % (tableName[0:]))
+                print "Can not found the fields for %s" % tableName[0:]
             
             if len(tableNameList) > 0:
                 return ["", "TABLEPOOL", 0, tableNameList, ""]
@@ -376,59 +384,54 @@ class CCsrConfig(object):
 
 
     def get_baseAddr_by_csrMacro(self, csrMacro):
-        print csrMacro
-        print '#####'
+        #print csrMacro
+        #print '#####'
         if 'CB_COUNTER_ADDR_PREFIX'==csrMacro:
             print '########################'
             print '***********************'
             print '########################'
             print '***********************'
-        if len(macroDict) > 0 :
+        if len(macroDict) > 0:
             if macroDict.has_key(csrMacro) == True:
-                print "Found the base address for %s" % csrMacro
+                #print "Found the base address for %s" % csrMacro
                 return macroDict[csrMacro]
-            else :
-                csrMacro1 = None
+            else:
                 if ( csrMacro.find("0x") != -1):
                     pos = csrMacro.find("0x")
                     csrMacro1 = csrMacro[pos:]
-                    print '1'
-                    print csrMacro1
+                    #print '1q'
+                    #print csrMacro1
                 else:
                     if ( csrMacro.find("h") != -1):
                         pos = csrMacro.find("h")
                         csrMacro1 = "0x" + csrMacro[pos+1:]
                         print '2'
                         print csrMacro1
-                        
+                    logger.debug(csrMacro)
                         
                 #print "Can not found the base address for %s, transfer to %d" % (csrMacro, int(csrMacro_, 16))
-                return int(csrMacro1, 16)
 
+                return int(csrMacro1, 16)
                 
         # try to get the base addr through the macro
         #fd = xlrd.open_workbook(u"ES90_CSR节点地址分配_v1.6.xlsx")
         fd = xlrd.open_workbook("../reg_tab/ES90_CSR_node_addr_alloc_v1.6.xlsx")
 
-
+        print "ES90_CSR_node_addr_alloc_v1.6.xlsx"
         f = file("./tmp/allMacro", 'w')
         
         for sheetName in fd.sheet_names():
-            
+            print sheetName
             #1过滤掉无用的sheet
             if sheetName in [u"版本记录", u"地址分配说明"]:
                 continue
             
             table = fd.sheet_by_name(sheetName)
             row_start = 0
-
-            print 'sheet name = ', sheetName
-            print 'sheet count = ', table.nrows
             
             #1过滤掉前面的标题部分
             for row in range(table.nrows):
                 row_start = row + 1
-                print 'row = ', row
                 print "######################### %s "  % table.cell(row, 5).value
                 
                 if table.cell(row, 5).value.strip() == u"基地址": 
@@ -481,14 +484,20 @@ class CCsrConfig(object):
 
     
     def get_reg_offset(self, str):
-        pattorn = '(0[xX][0-9a-fA-F]+)\+[nN]([0-9]+)\*(0[xX][0-9a-fA-F]+)'
+
+        pattorn = '(0[xX][0-9a-fA-F]+)\+[nN]([0-9]*)\*(0[xX][0-9a-fA-F]+)'
         ret = re.match(pattorn, str)
+
         if ret is None:
-            #print "offset %d  %d  %d" % (int(str, 16), 1, 0)
+            # print "offset %d  %d  %d" % (int(str, 16), 1, 0)
             return (int(str, 16), 1, 0)
         else:
-            #print "offset %s  %s  %s" % (ret.group(1),ret.group(2),ret.group(3))            
-            return (int(ret.group(1), 16), int(ret.group(2)), int(ret.group(3), 16)) 
+            # print "offset %s  %s  %s" % (ret.group(1),ret.group(2),ret.group(3))
+            gro_2 = ret.group(2)
+            # print 'gro_2 = ', gro_2
+            if len(gro_2) == 0:
+                gro_2 = '1'
+            return (int(ret.group(1), 16), int(gro_2), int(ret.group(3), 16))
 
 
     def get_field_info(self, name, scop):
@@ -578,11 +587,10 @@ class CCsrConfig(object):
         row = None
 
         f= file("./tmp/macro_not_define", "a")
-        
         for sheetName in self._excelfd.sheet_names():
             print sheetName
             csrCfgSheet = self._excelfd.sheet_by_name(sheetName)
-            print csrCfgSheet.nrows
+            #print csrCfgSheet.nrows
             if None != csrCfgSheet:
                 #logger.info("csrCfgSheet: %s rows=%d"%(sheetName, csrCfgSheet.nrows))
                 if csrCfgSheet.nrows == 0:
@@ -597,25 +605,24 @@ class CCsrConfig(object):
                 continue
 
             for row in range(csrCfgSheet.nrows):
-                print row
+                #print row
                 if table.cell(row, 0).value.strip() == u"基地址":
                     self.baseAddr = table.cell(row, 1).value
-                    print self.baseAddr
+                    #print self.baseAddr
                     break                    
                 if table.cell(row, 0).value.strip() == u"CSR节点号":
                     self.baseAddr = table.cell(row, 1).value
-                    print self.baseAddr
+                    #print self.baseAddr
                     break
             if row+1 == csrCfgSheet.nrows : # if there is no macro info in the sheet
                 continue
             
             macroList = self.get_reg_base_macro(self.baseAddr)
-            
+            #print macroList
             for csrMacro in macroList:
-                print csrMacro
                 base_addr = self.get_baseAddr_by_csrMacro(csrMacro)
                 if base_addr == "NULL":                    
-                    #print "%s  %s Macro %s \n" % (self.get_excel_name(), sheetName, csrMacro)
+                    print "%s  %s Macro %s \n" % (self.get_excel_name(), sheetName, csrMacro)
                     f.write("%-30s  %-30s  %-30s \n" % (self.get_excel_name(), sheetName, csrMacro))
             
         f.close()   
@@ -739,6 +746,7 @@ class CCsrConfig(object):
                 continue
                 
             field_of_table = ""
+            print csrCfgSheet
             
             #1过滤掉前面的标题部分
             for row in range(csrCfgSheet.nrows):                
@@ -783,8 +791,7 @@ class CCsrConfig(object):
                 row = row_start
                 while row < table.nrows :
                 #for row in list(range(table.nrows))[row_start:]:
-                    #print 'row %d  reg_name %s \n' % (row, table.cell(row, 0).value)
-                    
+
                     if table.cell(row, 0).value != "": # the first line of a register
                         
                         fieldList = []
@@ -793,6 +800,7 @@ class CCsrConfig(object):
                         nBits = 64
                         
                         reg_name = self.get_reg_name(table.cell(row, 0).value)
+
                         if reg_name[len(reg_name)-1] == "_":
                             #print "%s --- %s" % (reg_name, reg_name[:-1])
                             reg_name = reg_name[:-1]
@@ -816,9 +824,9 @@ class CCsrConfig(object):
 
                         reg_bar = 4
                         if reg_flag == "SOC_REG_FLAG_VP_CODE":
-                            reg_bar = 0                            
-                                                    
-                        #reg_base = self.get_reg_base(self.baseAddr)
+                            reg_bar = 0
+
+                        # reg_base = self.get_reg_base(self.baseAddr)
                         (reg_offset_start, n_regs, reg_offset_offset) = self.get_reg_offset(table.cell(row, 1).value)
 
                         (field_name, field_len, field_bp, default) = self.get_reg_field_info(table.cell(row, 3).value, table.cell(row, 4).value, table.cell(row, 5).value)
@@ -866,7 +874,6 @@ class CCsrConfig(object):
                                         print "Table type for %s not filled...." % field_of_table.upper()
                                     fieldList = field_info[3]  # here, the list maybe have several kinds of fields with different keyTypes and width
 
-                            
                             else: # this is a table, but no detial fields info
                                 #print "table in register folder....."
                                 #if self._excelName.find("table_csr_excel") != -1:
@@ -895,13 +902,11 @@ class CCsrConfig(object):
 
                             if sheetName in ["table_pool"] :
                                 i = row + 14 # table pool have 864 bits
-                            
+
                         else: # it's a register, get follow fields
                             i = row + 1
                             if i != table.nrows:
-                            
-                                while(table.cell(i, 0).value == ""):
-                                    #print 'row %d ' % i    
+                                while(table.cell(i, 0).value.rstrip() == ''):
                                     (field_name, field_len, field_bp, default) = self.get_reg_field_info(table.cell(i, 3).value, table.cell(i, 4).value, table.cell(i, 5).value)
                                     fieldObj = CField(field_name, field_len, field_bp, default, table.cell(i, 7).value)
                                     fieldList.append(fieldObj)
@@ -995,16 +1000,12 @@ class CCsrConfig(object):
                                     objList.append(regObj)
                     else:
                         row +=1
-
                                                 
-            except Exception as e:                
+            except Exception as e:
+                time.sleep(0.2)
                 logger.error("%s"%e)
                 logger.error("error: %s table.nrows = %d, rownum = %d\n"%(sheetName, table.nrows, row))
-            #finally:
-
-                #print 'finally'
-                #logger.info(u"This sheet %s has %d register. There are %s"\
-                #            %(sheetName, len(regInfoList), str(regInfoList)))
+                time.sleep(0.1)
 
         return objList
 

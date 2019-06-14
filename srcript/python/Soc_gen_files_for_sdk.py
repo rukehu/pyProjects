@@ -12,9 +12,6 @@ import time
 #from parse_main import *
 
 
-
-import sys
-
 multi_addr_reg_list = [
 "VLAN_CTRL",
 "ING_OUTER_TPID_0",
@@ -127,13 +124,23 @@ table_pool_dict = {"L2_ENTRY_T":"HASH", "L3_ENTRY_IPV4_UNICAST_T":"HASH", "L3_EN
 
 
 # below is record the hash and tcam tables. include the "data" sheet name and "key" sheet name. and the type of the table
-tcam_data_list = [ "my_station_data", "l3_tunnel_data_only", "l2_user_entry_data_only", "udf_offset", "l3_defip" ]      
-tcam_key_list =  [ "my_station_tcam", "l3_tunnel_tcam",      "l2_user_entry_tcam",      "udf_tcam",    "l3_lpm_tcam_0"]
-tcam_dict = { "my_station_data":"TCAM", "l3_tunnel_data_only":"TCAM", "l2_user_entry_data_only":"TCAM", "udf_offset":"TCAM", "l3_defip" : "TCAM"} 
+# tcam_data_list = [ "my_station_data", "l3_tunnel_data_only", "l2_user_entry_data_only", "udf_offset"]
+# tcam_key_list =  [ "my_station_tcam", "l3_tunnel_tcam",      "l2_user_entry_tcam",      "udf_tcam"]
+# tcam_dict = {"my_station_data":"TCAM", "l3_tunnel_data_only":"TCAM", "l2_user_entry_data_only":"TCAM", "udf_offset":"TCAM", "l3_defip" : "TCAM"}
+#
+# hash_data_list = ["egr_vlan_xlate_data",  "vlan_xlate_data",   "mpls_entry_data", "trill_rfp_check_entry_data", "trill_forward_tree_data" ]
+# hash_key_list =  ["egr_vlan_xlate",       "vlan_xlate",        "mpls_entry",      "trill_rfp_check",            "trill_forward_tree" ]
+# hash_dict = {"egr_vlan_xlate_data":"HASH",  "vlan_xlate_data":"HASH", "mpls_entry_data":"HASH", "trill_rfp_check_entry_data":"HASH", "trill_forward_tree_data":"HASH"}
+#
+
+tcam_data_list = [ "VLAN_SUBNET_TCAM_DATA_ONLY_t", "l3_tunnel_data_only", "l2_user_entry_data_only", "udf_offset"]
+tcam_key_list =  [ "VLAN_SUBNET_TCAM_DATA_ONLY", "l3_tunnel_tcam",      "l2_user_entry_tcam",      "udf_tcam"]
+tcam_dict = {"p0_st_my_station_data":"TCAM", "l3_tunnel_data_only":"TCAM", "l2_user_entry_data_only":"TCAM", "udf_offset":"TCAM", "l3_defip" : "TCAM"}
 
 hash_data_list = ["egr_vlan_xlate_data",  "vlan_xlate_data",   "mpls_entry_data", "trill_rfp_check_entry_data", "trill_forward_tree_data" ]
-hash_key_list =  ["egr_vlan_xlate",       "vlan_xlate",        "mpls_entry",      "trill_rfp_check",            "trill_forward_tree" ]      
-hash_dict = {"egr_vlan_xlate_data":"HASH",  "vlan_xlate_data":"HASH", "mpls_entry_data":"HASH", "trill_rfp_check_entry_data":"HASH", "trill_forward_tree_data":"HASH"}        
+hash_key_list =  ["egr_vlan_xlate",       "vlan_xlate",        "mpls_entry",      "trill_rfp_check",            "trill_forward_tree" ]
+hash_dict = {"egr_vlan_xlate_data":"HASH",  "vlan_xlate_data":"HASH", "mpls_entry_data":"HASH", "trill_rfp_check_entry_data":"HASH", "trill_forward_tree_data":"HASH"}
+
 
 
 
@@ -2374,7 +2381,7 @@ int32_t cli_%s_exit(int32_t module_id, int32_t argc, char_t *args[])
                     for info in fieldInfoList:                        
                         key = info[0]
                         
-                        #print "sheet %s \n" % mode
+                        print "sheet %s key= %s\n" % (mode, key)
                         #add set function for table
                         str = "int32_t cli_%s_%s_set_mem(int32_t module_id, int32_t argc, char_t *args[])\n" % (memList[mem]._regName, key)
                         str += "{\n    return cli_mem_set(module_id, argc, args, \"%s\", %d, \"%s\", %sm, %s);\n}\n\n" % (memList[mem]._regName, int(key), table_type, memList[mem]._table_struct_name.upper(), key_table_struct)
@@ -2727,7 +2734,7 @@ int32_t cli_%s_exit(int32_t module_id, int32_t argc, char_t *args[])
             # hash or tcam
             table_type = self.get_table_type(mode)
             if table_type in ["HASH", "TCAM"]:
-                #print "########### hash_tcam %s" % mode
+                print "########### hash_tcam %s" % mode
                 continue
 
             # if table pool
@@ -2852,13 +2859,15 @@ int32_t cli_%s_exit(int32_t module_id, int32_t argc, char_t *args[])
 
         regList = []
         table_struct = []
-                
+        #print "......GenerateHashTcamTabStruct......\n"
         for mode in objDict:                        
-
+            #print "enter table_type\n"
             # hash or tcam
+            
             table_type = self.get_table_type(mode)
+            #print "GenerateHashTcamTabStruct   table_type: ", table_type
             if table_type in ["HASH", "TCAM"]: # only for data table when table is tcam or hash           
-
+    
                 if objDict[mode][2][0] > 0:
                     regList = objDict[mode][2][1]
 
@@ -3158,13 +3167,13 @@ int32_t cli_%s_exit(int32_t module_id, int32_t argc, char_t *args[])
         f_hash_tcam.write("#endif\n")
         f_hash_tcam.write("""\n#endif /* SF_GROOT_SUPPORT */\n""")
 
-        f_table_pool.write(str)
-        f_table_pool.write("\n#ifdef SF_GROOT_SUPPORT\n")
-        f_table_pool.write("#ifndef __SOC_GROOT_TABLE_POOL_H__\n")
-        f_table_pool.write("#define __SOC_GROOT_TABLE_POOL_H__\n\n")    
-        self.GenerateTablePoolStruct   (f_table_pool, objDict,  soc)
-        f_table_pool.write("#endif\n")
-        f_table_pool.write("""\n#endif /* SF_GROOT_SUPPORT */\n""")
+        #f_table_pool.write(str)
+        #f_table_pool.write("\n#ifdef SF_GROOT_SUPPORT\n")
+        #f_table_pool.write("#ifndef __SOC_GROOT_TABLE_POOL_H__\n")
+        #f_table_pool.write("#define __SOC_GROOT_TABLE_POOL_H__\n\n")    
+        #self.GenerateTablePoolStruct   (f_table_pool, objDict,  soc)
+        #f_table_pool.write("#endif\n")
+        #f_table_pool.write("""\n#endif /* SF_GROOT_SUPPORT */\n""")
 
         
         f_reg.close()
@@ -3769,11 +3778,14 @@ int32_t cli_%s_exit(int32_t module_id, int32_t argc, char_t *args[])
         f.write("\n#include \"./soc/service/reg_tab/groot/soc_groot_allsymbol.h\"\n")
         
         table_struct = []
-        
-        for mode in objDict:            
+
+        print hash_tcam_dict
+        for mode in objDict:
 
             # if hash or tcam
+            logger.debug(mode)
             table_type = self.get_table_type(mode)
+            logger.debug( "table_type = %s" %table_type)
             if table_type in ["HASH", "TCAM"]: # only for data table when table is tcam or hash                
                 if objDict[mode][2][0] > 0:
                     regList = objDict[mode][2][1]

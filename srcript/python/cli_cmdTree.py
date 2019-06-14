@@ -5,6 +5,9 @@ import os
 from xml.etree import ElementTree
 from cli_view import CView
 from cli_command import CCommand
+import logging
+
+logger = logging.getLogger('cli_cmdtree')
 
 class CCmdTree(object):
     """define a type for CLI"""

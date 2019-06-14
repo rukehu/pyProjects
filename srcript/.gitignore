@@ -12,3 +12,6 @@ build/
 dist/
 python_for_kernel/
 *.log
+tmp/
+all*
+*.xlsx

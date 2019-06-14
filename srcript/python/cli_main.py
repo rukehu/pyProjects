@@ -7,18 +7,21 @@ from cli_cmdTree import CCmdTree
 from parse_main import start
 from pd_parser import pd_init
 import shutil
+import logging
+
+logging.basicConfig(level=logging.NOTSET, format='[%(filename)s:%(lineno)d]-%(levelname)s %(message)s')
+logger = logging.getLogger('main')
 
 if __name__ == '__main__':
 
     print ("This is cli_main.py __main__ function")
 
-    
-
 
     start()
     pd_init()
-    
-    if 1 == 0:
+
+
+    if 1 == 1:
         shutil.copy("./config.xml",             "./tmp/")
         shutil.copy("./interface.xml",          "./tmp/")
         shutil.copy("./openflow.xml",           "./tmp/")
@@ -32,7 +35,7 @@ if __name__ == '__main__':
         shutil.copy("./fp.xml",                 "./tmp/")
         shutil.copy("./soc.xml",                "./tmp/")
         
-        
+
         cmdTree = CCmdTree("./tmp/")
         cmdTree.parseXml()
         cmdTree.generCode_funcDef_h()
@@ -40,7 +43,7 @@ if __name__ == '__main__':
         cmdTree.generCode_funcExtern_h()
         cmdTree.generCode_cli_view_h()
         cmdTree.generCode_cli_gen_c()
-      
+
     print "Copying the files to specified folders........\n"
     
     # copy files to specified folder
