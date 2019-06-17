@@ -134,7 +134,7 @@ table_pool_dict = {"L2_ENTRY_T":"HASH", "L3_ENTRY_IPV4_UNICAST_T":"HASH", "L3_EN
 #
 
 tcam_data_list = [ "VLAN_SUBNET_TCAM_DATA_ONLY_t", "l3_tunnel_data_only", "l2_user_entry_data_only", "udf_offset"]
-tcam_key_list =  [ "VLAN_SUBNET_TCAM_DATA_ONLY", "l3_tunnel_tcam",      "l2_user_entry_tcam",      "udf_tcam"]
+tcam_key_list =  [ "MY_STATION_TCAM_DATA_ONLY_T", "l3_tunnel_tcam",      "l2_user_entry_tcam",      "udf_tcam"]
 tcam_dict = {"p0_st_my_station_data":"TCAM", "l3_tunnel_data_only":"TCAM", "l2_user_entry_data_only":"TCAM", "udf_offset":"TCAM", "l3_defip" : "TCAM"}
 
 hash_data_list = ["egr_vlan_xlate_data",  "vlan_xlate_data",   "mpls_entry_data", "trill_rfp_check_entry_data", "trill_forward_tree_data" ]
