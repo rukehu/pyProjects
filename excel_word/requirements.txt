@@ -2,7 +2,7 @@ altgraph==0.16.1
 et-xmlfile==1.0.1
 future==0.17.1
 jdcal==1.4
-lxml==4.3.3
+lxml==4.6.2
 macholib==1.11
 openpyxl==2.6.2
 pefile==2018.8.8
